@@ -6394,7 +6394,7 @@ module.exports = yeast;
         function untilPlayer() {
             return new Promise(resolve => {
                 let timer = setTimeout(() => {
-                    if(window.player) {
+                    if(document.querySelector(".bpx-player-ctrl-btn.bpx-player-ctrl-web")) {
                         resolve();
                         return;
                     }
