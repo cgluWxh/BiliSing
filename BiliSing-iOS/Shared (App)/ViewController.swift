@@ -183,6 +183,7 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
             }
 
             DispatchQueue.main.async {
+                print(scriptSource)
                 // 构造 WKUserScript
                 let userScript = WKUserScript(
                     source: scriptSource,
@@ -203,8 +204,8 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         let msg = message.body as! String;
-        let splitted = msg.split(separator: "$");
-        self.loadUserScriptAndEnterRoom(from: splitted[1] as! String, enterUrl: "https://bilibili.com/?bilising-room-id=" + splitted[0]);
+        let splitted = msg.split(separator: "$").map { String($0) };
+        self.loadUserScriptAndEnterRoom(from: splitted[1], enterUrl: "https://bilibili.com/?bilising-room-id=" + splitted[0]);
     }
 
 }
