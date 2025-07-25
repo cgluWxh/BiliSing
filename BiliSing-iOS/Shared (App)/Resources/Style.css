@@ -2,6 +2,7 @@
     -webkit-user-select: none;
     -webkit-user-drag: none;
     cursor: default;
+    font-size: 1.5em;
 }
 
 :root {
@@ -57,5 +58,8 @@ body.state-off :is(.state-on, .state-unknown) {
 }
 
 button {
-    font-size: 1em;
+    padding: 1em;
+    text-align: center;
+    alignment-baseline: central;
+    height: 2em;
 }

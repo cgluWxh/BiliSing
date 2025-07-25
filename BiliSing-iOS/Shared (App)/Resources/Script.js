@@ -1,24 +1,12 @@
-function show(platform, enabled, useSettingsInsteadOfPreferences) {
-    document.body.classList.add(`platform-${platform}`);
-
-    if (useSettingsInsteadOfPreferences) {
-        document.getElementsByClassName('platform-mac state-on')[0].innerText = "BiliSing’s extension is currently on. You can turn it off in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('platform-mac state-off')[0].innerText = "BiliSing’s extension is currently off. You can turn it on in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('platform-mac state-unknown')[0].innerText = "You can turn on BiliSing’s extension in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('platform-mac open-preferences')[0].innerText = "Quit and Open Safari Settings…";
-    }
-
-    if (typeof enabled === "boolean") {
-        document.body.classList.toggle(`state-on`, enabled);
-        document.body.classList.toggle(`state-off`, !enabled);
-    } else {
-        document.body.classList.remove(`state-on`);
-        document.body.classList.remove(`state-off`);
-    }
+function startBili() {
+    const val = document.querySelector("#room-id-input").value;
+    const script = document.querySelector("#userscript-input").value;
+    if (!val || !script) return;
+    localStorage.userscript = script;
+    webkit.messageHandlers.controller.postMessage(`${val}$${script}`);
 }
 
-function openPreferences() {
-    webkit.messageHandlers.controller.postMessage("open-preferences");
-}
-
-document.querySelector("button.open-preferences").addEventListener("click", openPreferences);
+document.addEventListener("DOMContentLoaded", function(){
+    document.querySelector("#startbili").addEventListener("click", startBili);
+    document.querySelector("#userscript-input").value = localStorage.userscript || "https://sing.bilibiili.com/static/bilising.user.js";
+})

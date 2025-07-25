@@ -40,6 +40,7 @@ class RoomInfo:
         self.users = []
         self.played_songs = []
         self.messages = []  # 存储聊天消息
+        self.last_activity = time.time()  # 记录最后活跃时间
 
 def convert_b23(b23_url):
     try:
@@ -107,6 +108,9 @@ def add_message_to_room(room_id, user_name, content, message_type='user'):
         if len(room.messages) > 100:
             room.messages = room.messages[-100:]
         
+        # 更新房间活跃时间
+        update_room_activity(room_id)
+        
         return message
     return None
 
@@ -122,6 +126,28 @@ def get_messages_for_room(room_id):
         } for msg in room.messages[-100:]]  # 返回最近100条
     return []
 
+def update_room_activity(room_id):
+    """更新房间的最后活跃时间"""
+    if room_id in rooms:
+        rooms[room_id].last_activity = time.time()
+
+def is_room_expired(room_id):
+    """检查房间是否已过期（超过2小时未活跃）"""
+    if room_id not in rooms:
+        return False
+    
+    current_time = time.time()
+    last_activity = rooms[room_id].last_activity
+    # 2小时 = 2 * 60 * 60 = 7200秒
+    return (current_time - last_activity) > 7200
+
+def clear_expired_room(room_id):
+    """清除过期房间的数据"""
+    if room_id in rooms:
+        del rooms[room_id]
+        return True
+    return False
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -135,13 +161,25 @@ def on_join_room(data):
     # 创建用户
     user = User(user_name, user_type)
     
+    # 检查房间是否存在且是否过期
+    room_exists = room_id in rooms
+    room_expired = is_room_expired(room_id) if room_exists else False
+    
+    # 如果房间过期，清除数据
+    if room_expired:
+        clear_expired_room(room_id)
+        room_exists = False
+    
     # 如果房间不存在且用户是master，则创建房间
-    if room_id not in rooms:
+    if not room_exists:
         if user_type == 'master':
             rooms[room_id] = RoomInfo(room_id)
         else:
             emit('error', {'message': '房间不存在，请等待主播创建房间'})
             return
+    
+    # 更新房间活跃时间
+    update_room_activity(room_id)
     
     # 加入房间
     join_room(room_id)
@@ -190,6 +228,9 @@ def on_add_song(data):
         emit('error', {'message': '房间不存在'})
         return
     
+    # 更新房间活跃时间
+    update_room_activity(room_id)
+    
     # 提取哔哩哔哩视频信息
     video_info = extract_bilibili_info(bilibili_url)
     if not video_info:
@@ -236,6 +277,9 @@ def on_remove_song(data):
         emit('error', {'message': '房间不存在'})
         return
     
+    # 更新房间活跃时间
+    update_room_activity(room_id)
+    
     room = rooms[room_id]
     if 0 <= song_index < len(room.play_list):
         removed_song = room.play_list.pop(song_index)
@@ -272,6 +316,9 @@ def on_reorder_songs(data):
         emit('error', {'message': '房间不存在'})
         return
     
+    # 更新房间活跃时间
+    update_room_activity(room_id)
+    
     room = rooms[room_id]
     if 0 <= from_index < len(room.play_list) and 0 <= to_index < len(room.play_list):
         # 移动歌曲
@@ -300,6 +347,9 @@ def on_next_song(data):
     if room_id not in rooms:
         emit('error', {'message': '房间不存在'})
         return
+    
+    # 更新房间活跃时间
+    update_room_activity(room_id)
     
     room = rooms[room_id]
     
@@ -356,6 +406,9 @@ def on_replay_song(data):
         emit('error', {'message': '房间不存在'})
         return
     
+    # 更新房间活跃时间
+    update_room_activity(room_id)
+    
     room = rooms[room_id]
     if 0 <= song_index < len(room.played_songs):
         # 从已播放列表中获取歌曲并添加到播放列表
@@ -393,6 +446,9 @@ def on_send_message(data):
     if room_id not in rooms:
         emit('error', {'message': '房间不存在'})
         return
+    
+    # 更新房间活跃时间
+    update_room_activity(room_id)
     
     # 添加用户消息
     add_message_to_room(room_id, user_name, message_content, 'user')

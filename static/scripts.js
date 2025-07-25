@@ -2,14 +2,11 @@ let socket;
 let currentRoom = null;
 let currentUser = null;
 let currentUserType = null;
-let danmakuType = 'hidden'; // 默认隐藏弹幕
 
 function joinRoom() {
     const roomId = document.getElementById('room-id').value.trim();
     const userName = document.getElementById('user-name').value.trim();
     const userType = document.getElementById('user-type').value;
-    const dmkType = document.getElementById('danmaku-type').value;
-    danmakuType = dmkType; // 更新全局变量
     
     if (!roomId || !userName) {
         showError('请填写房间ID和用户名');
@@ -19,9 +16,20 @@ function joinRoom() {
     localStorage.setItem('lastRoomInfo', JSON.stringify({
         roomId: roomId,
         userName: userName,
-        userType: userType,
-        danmakuType: dmkType
+        userType: userType
     }));
+
+    if (userType === 'master') {
+        if (window.__BILISING_USERSCRIPT_ENABLED__) {
+            location.href = `https://bilibili.com/?bilising-room-id=${roomId}`;
+            return;
+        } else {
+            if (confirm("您没有安装BiliSing用户脚本，可能出现无法正常播放视频的问题，是否安装用户脚本？")) {
+                location.href = "/static/bilising.user.js";
+                return;
+            }
+        }
+    }
     
     // 初始化Socket.IO连接
     socket = io();
@@ -108,7 +116,7 @@ function updateCurrentPlaying(song) {
         const bvMatch = song.url.match(/BV[\w]+/);
         if (bvMatch) {
             const bvId = bvMatch[0];
-            const embedUrl = `https://player.bilibili.com/player.html?bvid=${bvId}&autoplay=1&muted=0&danmaku=${danmakuType === 'show' ? '1' : '0'}`;
+            const embedUrl = `https://player.bilibili.com/player.html?bvid=${bvId}&autoplay=1&muted=0&danmaku=0`;
             videoPlayer.innerHTML = `<iframe src="${embedUrl}" allowfullscreen sandbox="allow-scripts allow-same-origin" allow="fullscreen;autoplay"></iframe>`;
         } else {
             videoPlayer.innerHTML = '<div class="no-video">无法播放该视频</div>';
@@ -325,26 +333,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const userTypeSelect = document.getElementById('user-type');
     const userNameInput = document.getElementById('user-name');
     const roomIdInput = document.getElementById('room-id');
-    const danmakuTypeSelect = document.getElementById('danmaku-type');
     userTypeSelect.addEventListener('change', function() {
         currentUserType = userTypeSelect.value;
         if (currentUserType === 'master') {
             userNameInput.value = '播放设备';
             userNameInput.style.display = 'none';
-            danmakuTypeSelect.style.display = 'block';
         } else {
             if (userNameInput.value == '播放设备') userNameInput.value = '';
             userNameInput.style.display = 'block';
-            danmakuTypeSelect.style.display = 'none';
         }
     });
     const lastInfo = localStorage.getItem('lastRoomInfo');
     if (lastInfo) {
-        const { roomId, userName, userType, danmakuType } = JSON.parse(lastInfo);
+        const { roomId, userName, userType } = JSON.parse(lastInfo);
         roomIdInput.value = roomId || '';
         userTypeSelect.value = userType || 'slave';
         userNameInput.value = userName || '';
-        danmakuTypeSelect.value = danmakuType || 'show';
     }
     userTypeSelect.dispatchEvent(new Event('change'));
 });

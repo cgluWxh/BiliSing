@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BiliSing - 卡拉OK点歌系统</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <script src="{{ url_for('static', filename='bilising.user.js') }}"></script>
 </head>
 
 <body>
@@ -20,10 +20,6 @@
                 <select id="user-type">
                     <option value="slave" selected>点歌设备</option>
                     <option value="master">播放设备</option>
-                </select>
-                <select id="danmaku-type">
-                    <option value="show">显示弹幕</option>
-                    <option value="hidden" selected>隐藏弹幕</option>
                 </select>
                 <input type="text" id="user-name" placeholder="用户名" required>
                 <button onclick="joinRoom()">加入房间</button>
