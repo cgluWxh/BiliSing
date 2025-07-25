@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiliSing - 卡拉OK点歌系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div id="join-section">
+            <div class="header">
+                <h1>🎤 BiliSing</h1>
+            </div>
+            <div class="join-form">
+                <input type="text" id="room-id" placeholder="房间ID" required>
+                <select id="user-type">
+                    <option value="slave" selected>点歌设备</option>
+                    <option value="master">播放设备</option>
+                </select>
+                <select id="danmaku-type">
+                    <option value="show">显示弹幕</option>
+                    <option value="hidden" selected>隐藏弹幕</option>
+                </select>
+                <input type="text" id="user-name" placeholder="用户名" required>
+                <button onclick="joinRoom()">加入房间</button>
+            </div>
+        </div>
+
+        <div id="room-section" class="room-info">
+            <!-- Master视图 -->
+            <div id="master-view" class="master-view">
+                <div id="masterInfo">
+                    <span id="next-song-info">
+                        <span>下一首：</span>
+                        <span id="next-song-content">暂无歌曲</span>
+                    </span>
+                    <span style="color:lightblue;" onclick="playNextSong()">点击播放下一首</span>
+                </div>
+                <div class="video-container">
+                    <div id="video-player"></div>
+                </div>
+            </div>
+
+            <!-- Slave视图 -->
+            <div id="slave-view" class="slave-view">
+                <div id="basicInfo">
+                    <div id="current-song-info" class="song-card">
+                        <h4>正在播放：</h4>
+                        <div id="current-song-content">暂无歌曲</div>
+                    </div>
+
+                    <div class="add-song">
+                        <h3>添加歌曲</h3>
+                        <input type="text" id="bilibili-url" placeholder="粘贴哔哩哔哩分享链接">
+                        <button onclick="addSong()">点歌</button>
+                    </div>
+
+                    <!-- 播放列表 -->
+                    <button class="next-song-btn" onclick="playNextSong()">播放下一首</button>
+                    <div class="playlist">
+                        <h3>播放列表</h3>
+                        <div id="playlist-container">
+                            <p>暂无歌曲</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="extraInfo">
+
+                    <!-- 已播放歌曲列表 -->
+                    <div class="playlist">
+                        <h3>已播放歌曲</h3>
+                        <div id="played-songs-container">
+                            <p>暂无已播放歌曲</p>
+                        </div>
+                    </div>
+
+                    <!-- 聊天区域 -->
+                    <div class="chat-section">
+                        <h3>消息</h3>
+                        <div id="chat-messages" class="chat-messages">
+                            <p>暂无消息</p>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" id="chat-message-input" placeholder="输入消息..." maxlength="200">
+                            <button onclick="sendMessage()">发送</button>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+
+        <div id="error-container"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+
+</html>

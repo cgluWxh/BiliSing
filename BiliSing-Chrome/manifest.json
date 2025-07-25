@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "BiliSing Extension",
+  "version": "1.0",
+  "description": "哔哩点歌",
+  "content_scripts": [
+    {
+      "matches": ["https://bilibili.com/*", "https://*.bilibili.com/*"],
+      "js": ["bilising-master.user.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}

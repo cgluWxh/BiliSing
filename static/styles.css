@@ -1,0 +1,297 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #202123;
+    color: white;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #2a2d31;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.container.player {
+    max-width: unset;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #ddd;
+}
+
+.join-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+    margin: 0 auto 30px;
+}
+
+.join-form input, .join-form select, .join-form button {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.join-form button {
+    background-color: #00a1d6;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.join-form button:hover {
+    background-color: #0084b3;
+}
+
+.room-info {
+    display: none;
+}
+
+.master-view, .slave-view {
+    display: none;
+}
+
+.slave-view > div {
+    flex: 1;
+    padding: 20px;
+}
+
+.video-container {
+    text-align: center;
+}
+
+.video-container iframe {
+    width: 100%;
+    height: 90vh;
+    border: none;
+    border-radius: 10px;
+}
+
+.no-video {
+    padding: 60px;
+    text-align: center;
+    background-color: rgb(76 88 104);
+    border-radius: 10px;
+    color: #ddd;
+    font-size: 18px;
+}
+
+.song-card {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: rgb(82 86 93);
+    border-radius: 8px;
+    border-left: 4px solid #00a1d6;
+}
+
+.song-card h4 {
+    margin: 0 0 10px;
+    color: #ddd;
+}
+
+.add-song {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: rgb(82 86 93);
+    border-radius: 8px;
+}
+
+.add-song h3 {
+    margin: 0 0 15px;
+    color: #ddd;
+}
+
+.add-song input {
+    width: 70%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.add-song button {
+    padding: 10px 20px;
+    background-color: #00a1d6;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.playlist {
+    margin: 20px 0;
+}
+
+.playlist h3 {
+    margin-bottom: 15px;
+    color: #ddd;
+}
+
+.song-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background-color: rgb(76 88 104);
+}
+
+.song-info {
+    flex: 1;
+}
+
+.song-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.song-producer {
+    color: #ddd;
+    font-size: 14px;
+}
+
+.song-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.song-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.move-up {
+    background-color: #28a745;
+    color: white;
+}
+
+.move-down {
+    background-color: #007bff;
+    color: white;
+}
+
+.remove {
+    background-color: #dc3545;
+    color: white;
+}
+
+.replay-btn {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.chat-section {
+    margin: 20px 0;
+}
+
+.chat-messages {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: rgb(76 88 104);
+}
+
+.chat-message {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.chat-message.user {
+    background-color: rgb(149 171 171);
+    color: #000;
+    margin-left: auto;
+    text-align: right;
+}
+
+.chat-message.system {
+    background-color: #2a2d31;
+    color: #ddd;
+    font-style: italic;
+}
+
+.message-user {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.message-content {
+    line-height: 1.4;
+}
+
+.message-time {
+    font-size: 12px;
+    color: #806969;
+    margin-top: 4px;
+}
+
+.chat-input {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.chat-input button {
+    padding: 10px 20px;
+    background-color: #00a1d6;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.chat-input button:hover {
+    background-color: #0084b3;
+}
+
+.next-song-btn {
+    padding: 15px 30px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+@media screen and (max-width: 768px) {
+    .slave-view {
+        flex-direction: column;
+    }
+    
+}
