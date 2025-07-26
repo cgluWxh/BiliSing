@@ -10,7 +10,7 @@
 // @grant        none
 // ==/UserScript==
 
-const myURL = "http://localhost:11817";
+const myURL = "https://sing.bilibiili.com";
 
 /*!
  * Socket.IO v4.0.0
