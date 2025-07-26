@@ -246,6 +246,8 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             #bilising-content {
                 padding: 12px;
                 display: flex;
+                max-height: 80vh;
+                overflow: scroll;
             }
 
             #bilising-content {
@@ -485,10 +487,11 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             document.getElementById('bilising-qr-code').style.display = 'block';
 
             // use node-qrcode to generate QR code
-            const maxWidth = 480 / (window.devicePixelRatio || 1);
-            const width = Math.min(maxWidth, ((window.visualViewport ? window.visualViewport.width : window.innerWidth) - 40) * .4);
+            const maxSize = 480 / (window.devicePixelRatio || 1);
+            const heightLimit = Math.min(maxSize, (window.visualViewport ? window.visualViewport.height : window.innerHeight) * .65);
+            const widthLimit = Math.min(maxSize, ((window.visualViewport ? window.visualViewport.width : window.innerWidth) - 40) * .4);
             QRCode.toCanvas(document.getElementById('bilising-qr-image'), `${myURL}/?bilising-room-id=${currentRoom}`, {
-                width: width,
+                width: Math.min(widthLimit, heightLimit),
                 margin: 1,
                 errorCorrectionLevel: 'H',
             });
@@ -660,12 +663,17 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         header.addEventListener('mousedown', dragStart);
         document.addEventListener('mousemove', dragMove);
         document.addEventListener('mouseup', dragEnd);
+        header.addEventListener('touchstart', dragStart);
+        document.addEventListener('touchmove', dragMove);
+        document.addEventListener('touchend', dragEnd);
 
         function dragStart(e) {
             if (e.target.id === 'bilising-toggle') return;
-            
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
+
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            initialX = clientX - xOffset;
+            initialY = clientY - yOffset;
 
             if (e.target === header || header.contains(e.target)) {
                 isDragging = true;
@@ -675,8 +683,11 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         function dragMove(e) {
             if (isDragging) {
                 e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+
+                currentX = clientX - initialX;
+                currentY = clientY - initialY;
 
                 xOffset = currentX;
                 yOffset = currentY;
