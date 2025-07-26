@@ -141,7 +141,6 @@ http://localhost:11817
 - `room_joined`: 成功加入房间
 - `now_playing`: 当前播放歌曲更新
 - `playlist_updated`: 播放列表更新
-- `user_joined`: 用户加入通知
 - `error`: 错误信息
 
 ## 技术细节

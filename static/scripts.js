@@ -3,7 +3,10 @@ let currentRoom = null;
 let currentUser = null;
 let currentUserType = null;
 
+let triggeredJoin = false; // 用于防止重复加入房间
 function joinRoom() {
+    if (triggeredJoin) return;
+    triggeredJoin = true; // 设置为true，防止重复加入
     const roomId = document.getElementById('room-id').value.trim();
     const userName = document.getElementById('user-name').value.trim();
     const userType = document.getElementById('user-type').value;
@@ -109,10 +112,6 @@ function setupSocketListeners() {
     
     socket.on('error', function(data) {
         showError(data.message);
-    });
-    
-    socket.on('user_joined', function(data) {
-        console.log(`用户 ${data.user_name} (${data.user_type}) 加入了房间`);
     });
     
     socket.on('new_message', function(data) {
