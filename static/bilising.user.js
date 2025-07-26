@@ -10,7 +10,7 @@
 // @grant        none
 // ==/UserScript==
 
-const myURL = "https://sing.bilibiili.com";
+const myURL = "http://localhost:11817";
 
 /*!
  * Socket.IO v4.0.0
@@ -6456,8 +6456,10 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             }
         } else {
             currentSongElement.textContent = '暂无歌曲';
+            headerContentController.setOriginalText('已播放完所有歌曲，正在重复播放最后一首，请扫码点歌');
             const floatWindow = document.getElementById('bilising-float');
             floatWindow.classList.remove('bilising-collapsed');
+            return;
         }
 
         function untilPlayer() {
@@ -6475,7 +6477,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         try { await player.setAutoplay(false); } catch(e) { console.warn('设置自动播放失败:', e); }
         try { await player.seek(0); } catch(e) { console.warn('设置播放位置失败:', e); }
         try { await player.setPlaybackRate(1); } catch(e) { console.warn('设置播放速度失败:', e); }
-        try { await player.setLoop(false); } catch(e) { console.warn('设置循环播放失败:', e); }
+        try { await player.setLoop(true); } catch(e) { console.warn('设置循环播放失败:', e); }
         try { await player.setMuted(false); } catch(e) { console.warn('设置静音失败:', e); }
         try { await player.play(); } catch(e) { console.warn('播放失败:', e); }
         try { document.querySelector(".bpx-player-ctrl-btn.bpx-player-ctrl-web").click(); } catch(e) { console.warn('全屏失败:', e); }
@@ -6518,12 +6520,10 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                 <div style="color: #ccc; font-size: 10px;">UP主: ${nextSong.producer}</div>
             `;
             headerContentController.setOriginalText(`下一首: ${nextSong.title}; 正播放: ${currentPlaying ? currentPlaying.title : '暂无歌曲'}`);
-            playNextButton.disabled = false;
         } else {
             nextSong = null;
             nextSongElement.textContent = '暂无歌曲';
             headerContentController.setOriginalText('已是最后一首歌曲; 正播放: ' + (currentPlaying ? currentPlaying.title : '暂无歌曲'));
-            playNextButton.disabled = true;
         }
     }
 

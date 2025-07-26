@@ -144,6 +144,7 @@ body {
     border-radius: 8px;
     margin-bottom: 10px;
     background-color: rgb(76 88 104);
+    flex-wrap: wrap;
 }
 
 .song-info {
@@ -246,6 +247,7 @@ body {
 .chat-input {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .chat-input input {

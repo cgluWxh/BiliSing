@@ -191,12 +191,7 @@ def on_join_room(data):
     join_room(room_id)
     rooms[room_id].users.append(user)
     
-    # 添加系统消息（但还不广播）
-    new_message = None
-    if user.name != "播放设备":
-        new_message = add_message_to_room(room_id, user.name, f'加入了房间', 'system')
-    
-    # 发送当前房间状态（包含刚添加的消息）
+    # 发送当前房间状态
     room_info = rooms[room_id]
     emit('room_joined', {
         'user_uuid': user.uuid,
@@ -219,9 +214,11 @@ def on_join_room(data):
         'messages': get_messages_for_room(room_id)
     })
     
-    # 只向其他用户广播新用户加入的消息
-    if new_message:
-        emit('new_message', {'message': new_message}, room=room_id, include_self=False)
+    # 添加系统消息并广播给其他用户
+    if user.name != "播放设备":
+        new_message = add_message_to_room(room_id, user.name, f'加入了房间', 'system')
+        if new_message:
+            emit('new_message', {'message': new_message}, room=room_id)
     
     # 广播用户加入信息
     emit('user_joined', {
@@ -443,6 +440,10 @@ def on_replay_song(data):
         # 广播新消息
         if new_message:
             emit('new_message', {'message': new_message}, room=room_id)
+        
+        if not rooms[room_id].current_playing:
+            # 如果当前没有播放歌曲，立即播放新添加的歌曲
+            on_next_song({'room_id': room_id, 'user_name': user_name})
 
 @socketio.on('send_message')
 def on_send_message(data):
@@ -458,11 +459,12 @@ def on_send_message(data):
     update_room_activity(room_id)
     
     # 添加用户消息
-    new_message = add_message_to_room(room_id, user_name, message_content, 'user')
+    add_message_to_room(room_id, user_name, message_content, 'user')
     
     # 广播新消息
-    if new_message:
-        emit('new_message', {'message': new_message}, room=room_id)
+    emit('new_message', {
+        'messages': get_messages_for_room(room_id)
+    }, room=room_id)
 
 @socketio.on('disconnect')
 def on_disconnect():
