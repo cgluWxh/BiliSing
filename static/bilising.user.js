@@ -246,16 +246,8 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             #bilising-content {
                 padding: 12px;
                 display: flex;
-                max-height: 80vh;
-                height: max-content;
-                overflow: scroll;
             }
 
-            #bilising-content {
-                padding: 12px;
-                display: flex;
-            }
-            
             #bilising-content > div {
                 flex: 1;
             }
