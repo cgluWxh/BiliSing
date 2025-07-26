@@ -158,7 +158,7 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
         config.preferences.javaScriptCanOpenWindowsAutomatically = true;
         config.defaultWebpagePreferences.allowsContentJavaScript = true;
         webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15"
-//        webView.scrollView.contentInsetAdjustmentBehavior = .never;
+        webView.scrollView.contentInsetAdjustmentBehavior = .never;
 
         config.userContentController.add(self, name: "controller")
     

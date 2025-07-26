@@ -10,9 +10,34 @@
     <script src="../Script.js" defer></script>
 </head>
 <body>
-    <img src="../Icon.png" width="128" height="128" alt="BiliSing Icon">
-        <input type="text" placeholder="输入用户脚本地址" id="userscript-input" />
-        <input type="text" placeholder="输入房间ID" id="room-id-input" />
-        <button id="startbili">进入房间</button>
+    <div class="container">
+        <div class="header">
+            <img src="../Icon.png" width="80" height="80" alt="BiliSing Icon" class="app-icon">
+            <h1 class="app-title">BiliSing</h1>
+        </div>
+        
+        <div class="description">
+            <p>将您的设备作为投屏终端，与房间内的其他设备同步观看哔哩哔哩视频</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="input-group">
+                <label for="userscript-input">用户脚本地址</label>
+                <input type="text" placeholder="请输入同步服务提供者的用户脚本地址" id="userscript-input" class="input-field" />
+            </div>
+            
+            <div class="input-group">
+                <label for="room-id-input">房间ID</label>
+                <input type="text" placeholder="请输入房间ID" id="room-id-input" class="input-field" />
+            </div>
+            
+            <button id="startbili" class="start-button">
+                <span class="button-text">进入房间</span>
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+            </button>
+        </div>
+    </div>
 </body>
 </html>

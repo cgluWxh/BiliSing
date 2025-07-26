@@ -24,7 +24,7 @@ pip install -r requirements.txt
 
 # 启动应用
 echo "正在启动应用..."
-echo "应用将在 http://localhost:5000 运行"
+echo "应用将在 http://localhost:11817 运行"
 echo "按 Ctrl+C 停止应用"
 echo ""
 python app.py

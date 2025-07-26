@@ -64,7 +64,32 @@ function setupSocketListeners() {
             document.getElementById('slave-view').style.display = 'flex';
             document.getElementById('basicInfo').prepend(roomTitleEle)
         }
-        roomTitleEle.innerHTML = `房间: ${currentRoom}`;
+        roomTitleEle.innerHTML = `
+            <p>房间: ${currentRoom} <span id="bilising-toggle-text">单击展示点歌二维码</span></p>
+            <div id="bilising-qr-code" style="display: none; text-align: center;">
+                <canvas id="bilising-qr-image"></canvas>
+                <p>扫码加入房间</p>
+            </div>
+        `;
+        roomTitleEle.addEventListener('click', function() {
+            const qrCodeSection = document.getElementById('bilising-qr-code');
+            const toggleText = document.getElementById('bilising-toggle-text');
+            if (qrCodeSection.style.display === 'none') {
+                qrCodeSection.style.display = 'block';
+                toggleText.textContent = '单击隐藏点歌二维码';
+                const maxWidth = 480 / (window.devicePixelRatio || 1);
+                const rect = qrCodeSection.getBoundingClientRect();
+                const width = Math.min(maxWidth, rect.width * 0.8);
+                QRCode.toCanvas(document.getElementById('bilising-qr-image'), `${location.origin}/?bilising-room-id=${currentRoom}`, {
+                    width: width,
+                    margin: 1,
+                    errorCorrectionLevel: 'H'
+                })
+            } else {
+                toggleText.textContent = '单击展示点歌二维码';
+                qrCodeSection.style.display = 'none';
+            }
+        });
 
         updateCurrentPlaying(data.current_playing);
         
@@ -91,7 +116,13 @@ function setupSocketListeners() {
     });
     
     socket.on('new_message', function(data) {
-        updateChatMessages(data.messages || []);
+        if (data.message) {
+            // 单条新消息
+            appendSingleMessage(data.message);
+        } else if (data.messages) {
+            // 多条消息（用于初始化）
+            updateChatMessages(data.messages);
+        }
     });
 }
 
@@ -224,6 +255,31 @@ function updateChatMessages(messages) {
     container.scrollTop = container.scrollHeight;
 }
 
+function appendSingleMessage(message) {
+    const container = document.getElementById('chat-messages');
+    
+    // 如果容器显示"暂无消息"，先清空
+    if (container.innerHTML.includes('暂无消息')) {
+        container.innerHTML = '';
+    }
+    
+    const messageTime = new Date(message.timestamp * 1000).toLocaleTimeString();
+    const messageClass = message.message_type === 'user' ? 'user' : 'system';
+    
+    const messageHtml = `
+        <div class="chat-message ${messageClass}">
+            <div class="message-user">${message.user_name}</div>
+            <div class="message-content">${escapeHtml(message.content)}</div>
+            <div class="message-time">${messageTime}</div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', messageHtml);
+    
+    // 滚动到底部
+    container.scrollTop = container.scrollHeight;
+}
+
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -349,6 +405,13 @@ document.addEventListener('DOMContentLoaded', function() {
         roomIdInput.value = roomId || '';
         userTypeSelect.value = userType || 'slave';
         userNameInput.value = userName || '';
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('bilising-room-id');
+    if (roomId) {
+        roomIdInput.value = roomId;
+        userTypeSelect.value = 'slave';
+        userNameInput.value = '';
     }
     userTypeSelect.dispatchEvent(new Event('change'));
 });

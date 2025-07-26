@@ -1,65 +1,279 @@
 * {
     -webkit-user-select: none;
     -webkit-user-drag: none;
+    user-select: none;
     cursor: default;
-    font-size: 1.5em;
+    box-sizing: border-box;
 }
 
 :root {
     color-scheme: light dark;
-
+    --primary-color: #00AEEC;
+    --primary-hover: #0096D1;
+    --background-light: #f8f9fa;
+    --background-dark: #1a1a1a;
+    --text-light: #333;
+    --text-dark: #fff;
+    --border-light: #e1e5e9;
+    --border-dark: #333;
+    --card-bg-light: #fff;
+    --card-bg-dark: #2a2a2a;
     --spacing: 20px;
+    --border-radius: 12px;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 html {
     height: 100%;
+    font-size: 16px;
 }
 
 body {
+    margin: 0;
+    padding: var(--spacing);
+    height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--background-light);
+    color: var(--text-light);
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background: var(--background-dark);
+        color: var(--text-dark);
+    }
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    background: var(--card-bg-light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+    .container {
+        background: var(--card-bg-dark);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+}
+
+.header {
+    margin-bottom: 24px;
+}
+
+.app-icon {
+    border-radius: 16px;
+    margin-bottom: 12px;
+    transition: transform 0.3s ease;
+}
+
+.app-icon:hover {
+    transform: scale(1.05);
+}
+
+.app-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--primary-color);
+    letter-spacing: -0.5px;
+}
+
+.description {
+    margin-bottom: 32px;
+}
+
+.description p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text-light);
+    opacity: 0.8;
+}
+
+@media (prefers-color-scheme: dark) {
+    .description p {
+        color: var(--text-dark);
+    }
+}
+
+.form-container {
+    display: flex;
     flex-direction: column;
+    gap: 20px;
+}
 
-    gap: var(--spacing);
-    margin: 0 calc(var(--spacing) * 2);
-    height: 100%;
+.input-group {
+    text-align: left;
+}
 
-    font: -apple-system-short-body;
+.input-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--text-light);
+}
+
+@media (prefers-color-scheme: dark) {
+    .input-group label {
+        color: var(--text-dark);
+    }
+}
+
+.input-field {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 16px;
+    background: var(--background-light);
+    color: var(--text-light);
+    transition: all 0.3s ease;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 174, 236, 0.1);
+}
+
+.input-field.error {
+    border-color: #ff4757;
+    box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+    .input-field {
+        background: var(--background-dark);
+        border-color: var(--border-dark);
+        color: var(--text-dark);
+    }
+    
+    .input-field:focus {
+        box-shadow: 0 0 0 3px rgba(0, 174, 236, 0.2);
+    }
+    
+    .input-field.error {
+        border-color: #ff4757;
+        box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.2);
+    }
+}
+
+.field-error {
+    display: block;
+    color: #ff4757;
+    font-size: 12px;
+    margin-top: 4px;
+    animation: fadeIn 0.3s ease;
+}
+
+.error-message {
+    background: #ff4757;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
     text-align: center;
+    animation: slideIn 0.3s ease;
+    margin-top: 16px;
 }
 
-body:not(.platform-mac, .platform-ios) :is(.platform-mac, .platform-ios) {
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.start-button {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.start-button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 174, 236, 0.3);
+}
+
+.start-button:active {
+    transform: translateY(0);
+}
+
+.start-button.loading {
+    background: var(--primary-hover);
+    cursor: not-allowed;
+}
+
+.button-text {
+    transition: opacity 0.3s ease;
+}
+
+.loading-spinner {
+    position: absolute;
     display: none;
+    align-items: center;
+    justify-content: center;
 }
 
-body.platform-ios .platform-mac {
-    display: none;
+.start-button.loading .loading-spinner {
+    display: flex;
 }
 
-body.platform-mac .platform-ios {
-    display: none;
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
-body.platform-ios .platform-mac {
-    display: none;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-body:not(.state-on, .state-off) :is(.state-on, .state-off) {
-    display: none;
-}
-
-body.state-on :is(.state-off, .state-unknown) {
-    display: none;
-}
-
-body.state-off :is(.state-on, .state-unknown) {
-    display: none;
-}
-
-button {
-    padding: 1em;
-    text-align: center;
-    alignment-baseline: central;
-    height: 2em;
+/* 响应式设计 */
+@media (max-width: 480px) {
+    body {
+        padding: var(--spacing) 16px;
+    }
+    
+    .container {
+        padding: 24px;
+    }
+    
+    .app-title {
+        font-size: 24px;
+    }
+    
+    .description p {
+        font-size: 14px;
+    }
 }

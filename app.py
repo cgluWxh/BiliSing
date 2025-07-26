@@ -111,7 +111,13 @@ def add_message_to_room(room_id, user_name, content, message_type='user'):
         # 更新房间活跃时间
         update_room_activity(room_id)
         
-        return message
+        # 返回格式化的消息对象
+        return {
+            'user_name': message.user_name,
+            'content': message.content,
+            'message_type': message.message_type,
+            'timestamp': message.timestamp
+        }
     return None
 
 def get_messages_for_room(room_id):
@@ -185,11 +191,12 @@ def on_join_room(data):
     join_room(room_id)
     rooms[room_id].users.append(user)
     
-    # 添加系统消息
+    # 添加系统消息（但还不广播）
+    new_message = None
     if user.name != "播放设备":
-        add_message_to_room(room_id, user.name, f'加入了房间', 'system')
+        new_message = add_message_to_room(room_id, user.name, f'加入了房间', 'system')
     
-    # 发送当前房间状态
+    # 发送当前房间状态（包含刚添加的消息）
     room_info = rooms[room_id]
     emit('room_joined', {
         'user_uuid': user.uuid,
@@ -211,6 +218,10 @@ def on_join_room(data):
         } for song in room_info.played_songs],
         'messages': get_messages_for_room(room_id)
     })
+    
+    # 只向其他用户广播新用户加入的消息
+    if new_message:
+        emit('new_message', {'message': new_message}, room=room_id, include_self=False)
     
     # 广播用户加入信息
     emit('user_joined', {
@@ -242,7 +253,7 @@ def on_add_song(data):
     rooms[room_id].play_list.append(song)
     
     # 添加系统消息
-    add_message_to_room(room_id, user_name, f'点播了歌曲：{song.title}', 'system')
+    new_message = add_message_to_room(room_id, user_name, f'点播了歌曲：{song.title}', 'system')
     
     # 广播播放列表更新
     emit('playlist_updated', {
@@ -259,9 +270,8 @@ def on_add_song(data):
     }, room=room_id)
     
     # 广播新消息
-    emit('new_message', {
-        'messages': get_messages_for_room(room_id)
-    }, room=room_id)
+    if new_message:
+        emit('new_message', {'message': new_message}, room=room_id)
     
     if not rooms[room_id].current_playing:
         # 如果当前没有播放歌曲，立即播放新添加的歌曲
@@ -285,7 +295,7 @@ def on_remove_song(data):
         removed_song = room.play_list.pop(song_index)
         
         # 添加系统消息
-        add_message_to_room(room_id, user_name, f'删除了歌曲：{removed_song.title}', 'system')
+        new_message = add_message_to_room(room_id, user_name, f'删除了歌曲：{removed_song.title}', 'system')
         
         # 广播播放列表更新
         emit('playlist_updated', {
@@ -302,9 +312,8 @@ def on_remove_song(data):
         }, room=room_id)
         
         # 广播新消息
-        emit('new_message', {
-            'messages': get_messages_for_room(room_id)
-        }, room=room_id)
+        if new_message:
+            emit('new_message', {'message': new_message}, room=room_id)
 
 @socketio.on('reorder_songs')
 def on_reorder_songs(data):
@@ -364,7 +373,7 @@ def on_next_song(data):
             room.played_songs.append(room.current_playing)
         
         # 添加系统消息
-        add_message_to_room(room_id, user_name, f'播放下一首：{room.current_playing.title}', 'system')
+        new_message = add_message_to_room(room_id, user_name, f'播放下一首：{room.current_playing.title}', 'system')
         
         # 广播当前播放和播放列表更新
         emit('now_playing', {
@@ -389,9 +398,8 @@ def on_next_song(data):
         }, room=room_id)
         
         # 广播新消息
-        emit('new_message', {
-            'messages': get_messages_for_room(room_id)
-        }, room=room_id)
+        if new_message:
+            emit('new_message', {'message': new_message}, room=room_id)
     else:
         room.current_playing = None
         emit('now_playing', {'current_playing': None}, room=room_id)
@@ -416,7 +424,7 @@ def on_replay_song(data):
         room.play_list.append(song_to_replay)
         
         # 添加系统消息
-        add_message_to_room(room_id, user_name, f'重播了歌曲：{song_to_replay.title}', 'system')
+        new_message = add_message_to_room(room_id, user_name, f'重播了歌曲：{song_to_replay.title}', 'system')
         
         # 广播播放列表更新
         emit('playlist_updated', {
@@ -433,9 +441,8 @@ def on_replay_song(data):
         }, room=room_id)
         
         # 广播新消息
-        emit('new_message', {
-            'messages': get_messages_for_room(room_id)
-        }, room=room_id)
+        if new_message:
+            emit('new_message', {'message': new_message}, room=room_id)
 
 @socketio.on('send_message')
 def on_send_message(data):
@@ -451,12 +458,11 @@ def on_send_message(data):
     update_room_activity(room_id)
     
     # 添加用户消息
-    add_message_to_room(room_id, user_name, message_content, 'user')
+    new_message = add_message_to_room(room_id, user_name, message_content, 'user')
     
     # 广播新消息
-    emit('new_message', {
-        'messages': get_messages_for_room(room_id)
-    }, room=room_id)
+    if new_message:
+        emit('new_message', {'message': new_message}, room=room_id)
 
 @socketio.on('disconnect')
 def on_disconnect():
