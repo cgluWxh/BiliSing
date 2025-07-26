@@ -665,8 +665,8 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         document.addEventListener('mousemove', dragMove);
         document.addEventListener('mouseup', dragEnd);
         header.addEventListener('touchstart', dragStart);
-        document.addEventListener('touchmove', dragMove);
-        document.addEventListener('touchend', dragEnd);
+        document.addEventListener('touchmove', dragMove, { passive: false });
+        document.addEventListener('touchend', dragEnd, { passive: false });
 
         function dragStart(e) {
             if (e.target.id === 'bilising-toggle') return;
