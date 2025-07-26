@@ -6,7 +6,6 @@ let currentUserType = null;
 let triggeredJoin = false; // 用于防止重复加入房间
 function joinRoom() {
     if (triggeredJoin) return;
-    triggeredJoin = true; // 设置为true，防止重复加入
     const roomId = document.getElementById('room-id').value.trim();
     const userName = document.getElementById('user-name').value.trim();
     const userType = document.getElementById('user-type').value;
@@ -15,6 +14,8 @@ function joinRoom() {
         showError('请填写房间ID和用户名');
         return;
     }
+
+    triggeredJoin = true; // 设置为true，防止重复加入
 
     localStorage.setItem('lastRoomInfo', JSON.stringify({
         roomId: roomId,
@@ -111,6 +112,7 @@ function setupSocketListeners() {
     });
     
     socket.on('error', function(data) {
+        triggeredJoin = false; // 重置触发状态
         showError(data.message);
     });
     
