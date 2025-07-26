@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (roomId) {
         roomIdInput.value = roomId;
         userTypeSelect.value = 'slave';
-        userNameInput.value = '';
+        if (userNameInput.value == '播放设备') userNameInput.value = '';
     }
     userTypeSelect.dispatchEvent(new Event('change'));
 });

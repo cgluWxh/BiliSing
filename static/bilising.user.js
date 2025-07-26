@@ -560,8 +560,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         } else {
             currentSongElement.textContent = '暂无歌曲';
             headerContentController.setOriginalText('已播放完所有歌曲，正在重复播放最后一首，请扫码点歌');
-            const floatWindow = document.getElementById('bilising-float');
-            floatWindow.classList.remove('bilising-collapsed');
+            document.querySelector("#bilising-toggle").click();
             return;
         }
 
