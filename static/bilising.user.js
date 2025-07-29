@@ -187,7 +187,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                           <strong>下一首：</strong>
                           <div id="bilising-next-song">暂无歌曲</div>
                       </div>
-                      <button id="bilising-play-next">播放下一首</button>
+                      <button id="bilising-play-next">切歌</button>
                       <button id="bilising-batch-add-fav">批量添加收藏夹</button>
                   </div>
                 </div>

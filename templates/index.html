@@ -34,7 +34,7 @@
                         <span>下一首：</span>
                         <span id="next-song-content">暂无歌曲</span>
                     </span>
-                    <span style="color:lightblue;" onclick="playNextSong()">点击播放下一首</span>
+                    <span style="color:lightblue;" onclick="playNextSong()">切歌</span>
                 </div>
                 <div class="video-container">
                     <div id="video-player"></div>
@@ -52,11 +52,11 @@
                     <div class="add-song">
                         <h3>添加歌曲</h3>
                         <input type="text" id="bilibili-url" placeholder="粘贴哔哩哔哩分享链接">
-                        <button onclick="addSong()">点歌</button>
+                        <button id="add-song-btn" onclick="addSong()">点歌</button>
                     </div>
 
                     <!-- 播放列表 -->
-                    <button class="next-song-btn" onclick="playNextSong()">播放下一首</button>
+                    <button class="next-song-btn" onclick="playNextSong()">切歌</button>
                     <div class="playlist">
                         <h3>播放列表</h3>
                         <div id="playlist-container">

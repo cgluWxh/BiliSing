@@ -1,3 +1,40 @@
+(function(innerWindow) {
+    const u = navigator.userAgent;
+
+    let isSafari = false;
+    try {
+        // 由于 Safari 不支持正则表达式的 look behind, 所以据此判断是否为 Safari
+        new RegExp('(?<!a)b');
+    } catch (e) {
+        isSafari = true;
+    }
+    const versions = {
+        trident: u.indexOf('Trident') > -1, // IE内核
+        presto: u.indexOf('Presto') > -1, // opera内核
+        webKit: u.match(/AppleWebKit/i), // 苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') === -1, // 火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/i), // 是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), // ios终端
+        android: !!u.match(/Android|Linux/i), // android终端或者uc浏览器
+        iPhone: /iPhone/i.test(u), // 是否为iPhone或者QQHD浏览器
+        iPad: /iPad/i.test(u), // 是否iPad
+        webApp: /Safari/i.test(u), // 是否web应该程序，没有头部与底部
+        weixin: /MicroMessenger/i.test(u), // 是否微信 （2015-01-22新增）
+        qq: /\sQQ/i.test(u),
+        mac: /Mac OS/i.test(u),
+        chrome: /chrome/i.test(u),
+        safari: isSafari,
+        windows: /Windows/i.test(u),
+    };
+
+    innerWindow.browser = {
+        ...versions,
+        isMobile: ('ontouchstart' in window && (versions.mobile || versions.android || versions.ios || versions.mac)),
+        isAppleMobile: (versions.ios || versions.mac) && ('ontouchstart' in window),
+        isMacSafari: (versions.mac && (!versions.chrome && !versions.gecko)),
+    };
+})(window);
+
 let socket;
 let currentRoom = null;
 let currentUser = null;
@@ -28,9 +65,21 @@ function joinRoom() {
             location.href = `https://bilibili.com/?bilising-room-id=${roomId}`;
             return;
         } else {
-            if (confirm("您没有安装BiliSing用户脚本，可能出现无法正常播放视频的问题，是否安装用户脚本？")) {
-                location.href = "/static/bilising.user.js";
-                return;
+            if (browser.isAppleMobile) {
+                if (confirm("您需要下载苹果客户端以正常使用，是否下载？")) {
+                    location.href = `https://testflight.apple.com/join/K2ZQzyUA`;
+                    return;
+                }
+            } else if (browser.isMobile) {
+                if (confirm("您需要下载安卓客户端以正常使用，是否下载？")) {
+                    location.href = `/static/BiliSing_1.0.apk`;
+                    return;
+                }
+            } else {
+                if (confirm("您没有安装BiliSing用户脚本，可能出现无法正常播放视频的问题，是否安装用户脚本？")) {
+                    location.href = "/static/bilising.user.js";
+                    return;
+                }
             }
         }
     }
@@ -288,6 +337,7 @@ function escapeHtml(text) {
 }
 
 function addSong() {
+    const addSongBtn = document.getElementById('add-song-btn');
     const url = document.getElementById('bilibili-url').value.trim();
     
     if (!url) {
@@ -305,14 +355,17 @@ function addSong() {
         showError('请输入有效的哔哩哔哩链接');
         return;
     }
+
+    addSongBtn.disabled = true; // 禁用按钮，防止重复提交
     
     socket.emit('add_song', {
         room_id: currentRoom,
         url: matchedUrl[0],
         user_name: currentUser
     });
-    
+
     document.getElementById('bilibili-url').value = '';
+    addSongBtn.disabled = false; // 恢复按钮状态
 }
 
 function removeSong(index) {
