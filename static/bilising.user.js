@@ -262,7 +262,7 @@
             if (location.hostname.startsWith("m.")) {
                 if (browser.isMobile) {
                     // 准备要传递的 roomId 和 server
-                    let roomId = sessionStorage.getItem('bilising-room-id') || new URLSearchParams(window.location.search).get('bilising-room-id');
+                    let roomId = new URLSearchParams(window.location.search).get('bilising-room-id') || sessionStorage.getItem('bilising-room-id');
                     let server = new URLSearchParams(window.location.search).get("bilising-server") || sessionStorage.getItem("bilising-server");
 
                     if (roomId) setCookie('bilising-room-id', roomId, 600);
@@ -275,13 +275,13 @@
             }
 
             // www 版页面加载时，优先从 cookie 读取数据
-            let lastRoomId = getCookie('bilising-room-id') || sessionStorage.getItem('bilising-room-id');
+            let lastRoomId = new URLSearchParams(window.location.search).get('bilising-room-id') || sessionStorage.getItem('bilising-room-id') || getCookie('bilising-room-id');
             if (lastRoomId) {
                 sessionStorage.setItem('bilising-room-id', lastRoomId);
                 deleteCookie('bilising-room-id');
             }
 
-            myURL = getCookie('bilising-server') || sessionStorage.getItem('bilising-server');
+            myURL = new URLSearchParams(window.location.search).get("bilising-server") || sessionStorage.getItem("bilising-server") || getCookie("bilising-server");
             if (myURL) {
                 sessionStorage.setItem('bilising-server', myURL);
                 deleteCookie('bilising-server');
