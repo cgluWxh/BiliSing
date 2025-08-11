@@ -401,14 +401,15 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         }
 
         if (location.href.includes('/video/')) {
-            await untilElement(".bpx-player-ctrl-btn.bpx-player-ctrl-web");
-            await playFromStart();
+            await untilElement("#bilibili-player video");
             const video = document.querySelector("#bilibili-player video");
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
             video.onended = () => {
                 document.getElementById('bilising-play-next').click();
             };
-            video.setAttribute('playsinline', '');
-            video.setAttribute('webkit-playsinline', '');
+            await untilElement(".bpx-player-ctrl-btn.bpx-player-ctrl-web");
+            await playFromStart();
         }
     }
 

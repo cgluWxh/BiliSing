@@ -152,6 +152,11 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
         config.allowsInlineMediaPlayback = true;
         config.mediaTypesRequiringUserActionForPlayback = [];
         config.allowsAirPlayForMediaPlayback = true;
+        if #available(iOS 15.4, *) {
+            config.preferences.isElementFullscreenEnabled = false;
+        } else {
+            // Fallback on earlier versions
+        };
 //        config.allowsInlinePredictions = true;
         config.allowsPictureInPictureMediaPlayback = true;
         config.websiteDataStore = WKWebsiteDataStore.default();
