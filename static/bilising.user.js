@@ -403,9 +403,12 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         if (location.href.includes('/video/')) {
             await untilElement(".bpx-player-ctrl-btn.bpx-player-ctrl-web");
             await playFromStart();
-            document.querySelector("#bilibili-player video").onended = () => {
+            const video = document.querySelector("#bilibili-player video");
+            video.onended = () => {
                 document.getElementById('bilising-play-next').click();
-            }
+            };
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
         }
     }
 
