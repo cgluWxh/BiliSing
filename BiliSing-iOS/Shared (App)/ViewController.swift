@@ -9,10 +9,10 @@ import WebKit
 import os.log
 
 import UIKit
+internal import System
 typealias PlatformViewController = UIViewController
 
 class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMessageHandler {
-
     @IBOutlet var webView: WKWebView!
     
     override var prefersStatusBarHidden: Bool { return true }
@@ -205,7 +205,8 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         let msg = message.body as! String;
         let splitted = msg.split(separator: "$").map { String($0) };
-        self.loadUserScriptAndEnterRoom(from: splitted[1], enterUrl: "https://bilibili.com/?bilising-room-id=" + splitted[0]);
+        self.loadUserScriptAndEnterRoom(from: "https://" + splitted[1] + "/static/bilising.user.js", enterUrl: "https://bilibili.com/?bilising-room-id=" + splitted[0]);
     }
+    
 
 }

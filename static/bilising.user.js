@@ -10,8 +10,8 @@
 // @grant        none
 // ==/UserScript==
 
-// const myURL = "https://sing.bilibiili.com";
-const myURL = "http://localhost:11817" // For local testing
+const myURL = "https://sing.bilibiili.com";
+// const myURL = "http://localhost:11817" // For local testing
 
 /*!
  * Socket.IO v4.0.0

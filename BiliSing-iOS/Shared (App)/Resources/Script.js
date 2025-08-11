@@ -4,7 +4,7 @@ function startBili() {
     
     // 验证输入
     if (!val || !script) {
-        showError("请填写完整的房间ID和用户脚本地址");
+        showError("请填写完整的房间ID和同步服务器地址");
         return;
     }
     
@@ -82,12 +82,13 @@ function validateInput(input) {
 }
 
 document.addEventListener("DOMContentLoaded", function(){
+    const logo = document.querySelector("img");
     const startButton = document.querySelector("#startbili");
     const userscriptInput = document.querySelector("#userscript-input");
     const roomIdInput = document.querySelector("#room-id-input");
     
     // 设置默认用户脚本地址
-    userscriptInput.value = localStorage.userscript || "https://sing.bilibiili.com/static/bilising.user.js";
+    userscriptInput.value = localStorage.userscript || "";
     
     // 绑定点击事件
     startButton.addEventListener("click", startBili);
@@ -113,6 +114,15 @@ document.addEventListener("DOMContentLoaded", function(){
             roomIdInput.focus();
         }
     });
+    
+//    let count = 0;
+//    logo.addEventListener("click", function(e){
+//        count++;
+//        if (count>=7) {
+//            userscriptInput.value = "sing.bilibiili.com";
+//            validateInput(userscriptInput);
+//        }
+//    })
     
     // 输入时清除错误状态
     [userscriptInput, roomIdInput].forEach(input => {
