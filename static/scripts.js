@@ -61,27 +61,20 @@ function joinRoom() {
     }));
 
     if (userType === 'master') {
-        if (window.__BILISING_USERSCRIPT_ENABLED__) {
-            location.href = `https://bilibili.com/?bilising-room-id=${roomId}`;
-            return;
+        if ((!browser.isAppleMobile) && browser.isMobile) {
+            if (confirm("您需要下载安卓客户端以正常使用，是否下载？")) {
+                location.href = `/static/BiliSing_1.0.apk`;
+            }
         } else {
-            if (browser.isAppleMobile) {
-                if (confirm("您需要下载苹果客户端以正常使用，是否下载？")) {
-                    location.href = `https://testflight.apple.com/join/K2ZQzyUA`;
-                    return;
-                }
-            } else if (browser.isMobile) {
-                if (confirm("您需要下载安卓客户端以正常使用，是否下载？")) {
-                    location.href = `/static/BiliSing_1.0.apk`;
-                    return;
-                }
+            if (confirm("您是否已安装 BiliSing 插件或应用？")) {
+                location.href = `https://bilibili.com/?bilising-room-id=${roomId}&bilising-server=${location.protocol}//${location.host}`;
+            } else if (browser.isAppleMobile) {
+                location.href = `https://testflight.apple.com/join/K2ZQzyUA`;
             } else {
-                if (confirm("您没有安装BiliSing用户脚本，可能出现无法正常播放视频的问题，是否安装用户脚本？")) {
-                    location.href = "/static/bilising.user.js";
-                    return;
-                }
+                location.pathname = "/static/bilising.user.js";
             }
         }
+        return;
     }
     
     // 初始化Socket.IO连接
