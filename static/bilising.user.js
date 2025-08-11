@@ -10,8 +10,8 @@
 // @grant        none
 // ==/UserScript==
 
-const myURL = "https://sing.bilibiili.com";
-// const myURL = "http://localhost:11817" // For local testing
+// const myURL = "https://sing.bilibiili.com";
+const myURL = "http://localhost:11817" // For local testing
 
 /*!
  * Socket.IO v4.0.0
@@ -48,6 +48,18 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                 document.getElementById('bilising-header-content').textContent = this.originalText;
             }, duration);
         }
+    }
+
+    function untilElement(selector) {
+        return new Promise(resolve => {
+            let timer = setTimeout(() => {
+                if(document.querySelector(selector)) {
+                    resolve();
+                    return;
+                }
+                timer = setTimeout(() => resolve(untilElement(selector)), 1000);
+            }, 500);
+        });
     }
 
     function batchAddToFavList(bvList) {
@@ -158,10 +170,31 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
     let play_list = [];
     let nextSong = null;
 
+    async function playFromStart() {
+        try { player.setHandoff(nano.HandoffKind.Abort); } catch(e) { console.warn('设置手动播放失败:', e); }
+        try { await player.setAutoplay(false); } catch(e) { console.warn('设置自动播放失败:', e); }
+        try { await player.seek(0); } catch(e) { console.warn('设置播放位置失败:', e); }
+        try { await player.setPlaybackRate(1); } catch(e) { console.warn('设置播放速度失败:', e); }
+        try { await player.setLoop(true); } catch(e) { console.warn('设置循环播放失败:', e); }
+        try { await player.setMuted(false); } catch(e) { console.warn('设置静音失败:', e); }
+        try { await player.play(); } catch(e) { console.warn('播放失败:', e); }
+        try { if (!document.querySelector("#bilibili-player").classList.contains("mode-webscreen")) document.querySelector(".bpx-player-ctrl-btn.bpx-player-ctrl-web").click(); } catch(e) { console.warn('全屏失败:', e); }
+    }
+
     // 创建浮窗HTML
-    function createFloatingWindow() {
+    async function createFloatingWindow() {
         if (!location.href.includes('bilibili.com')) return;
         if (!sessionStorage.getItem('bilising-room-id') && !location.href.includes('bilising-room-id')) return;
+
+        // patch: 无刷切换视频有可能会导致问题页面崩溃
+        const desc = Object.getOwnPropertyDescriptor(Node.prototype, 'parentNode');
+        Object.defineProperty(Node.prototype, 'parentNode', {
+            get: function() {
+                const val = desc.get.call(this);
+                return val || { removeChild: () => { console.warn("忽略了一个 parentNode 不存在的问题") } };
+            }
+        });
+
         const floatingWindow = document.createElement('div');
         floatingWindow.id = 'bilising-float';
         floatingWindow.classList.add("bilising-collapsed");
@@ -366,6 +399,14 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
           document.getElementById('bilising-room-id').value = lastRoomId;
           document.getElementById('bilising-connect').click();
         }
+
+        if (location.href.includes('/video/')) {
+            await untilElement(".bpx-player-ctrl-btn.bpx-player-ctrl-web");
+            await playFromStart();
+            document.querySelector("#bilibili-player video").onended = () => {
+                document.getElementById('bilising-play-next').click();
+            }
+        }
     }
 
     // 设置事件监听器
@@ -505,6 +546,8 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         socket.on('playlist_updated', function(data) {
             updateNextSong(data.play_list);
             played_songs = data.played_songs || [];
+            if (!document.getElementById('bilising-float').classList.contains('bilising-collapsed'))
+                document.querySelector("#bilising-toggle").click();
             console.warn('播放列表已更新:', played_songs);
         });
 
@@ -549,40 +592,14 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                 <div style="color: #ccc; font-size: 10px;">UP主: ${song.producer}</div>
             `;
             
-            // 如果当前页面不是播放该视频，则导航到该视频
-            if (song.url && !window.location.href.includes(extractBVId(song.url))) {
-                navigateToVideo(song.url);
-            }
+            navigateToVideoIfNeeded(song.url);
         } else {
             currentSongElement.textContent = '暂无歌曲';
             headerContentController.setOriginalText('已播放完所有歌曲，正在重复播放最后一首，请扫码点歌');
             document.querySelector("#bilising-toggle").click();
             return;
         }
-
-        function untilPlayer() {
-            return new Promise(resolve => {
-                let timer = setTimeout(() => {
-                    if(document.querySelector(".bpx-player-ctrl-btn.bpx-player-ctrl-web")) {
-                        resolve();
-                        return;
-                    }
-                    timer = setTimeout(() => resolve(untilPlayer()), 1000);
-                }, 500);
-            });
-        }
-        await untilPlayer();
-        try { await player.setAutoplay(false); } catch(e) { console.warn('设置自动播放失败:', e); }
-        try { await player.seek(0); } catch(e) { console.warn('设置播放位置失败:', e); }
-        try { await player.setPlaybackRate(1); } catch(e) { console.warn('设置播放速度失败:', e); }
-        try { await player.setLoop(true); } catch(e) { console.warn('设置循环播放失败:', e); }
-        try { await player.setMuted(false); } catch(e) { console.warn('设置静音失败:', e); }
-        try { await player.play(); } catch(e) { console.warn('播放失败:', e); }
-        try { document.querySelector(".bpx-player-ctrl-btn.bpx-player-ctrl-web").click(); } catch(e) { console.warn('全屏失败:', e); }
-        document.querySelector("#bilibili-player video").onended = () => {
-            setTimeout(()=>document.querySelector(".bpx-player-ending-related-item-cancel").click(), 1000);
-            document.getElementById('bilising-play-next').click();
-        }
+        // MARK: append
     }
 
     // 更新下一首歌曲
@@ -612,33 +629,25 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
     }
 
     // 导航到视频
-    function navigateToVideo(url) {
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.style.display = 'none';
-        document.body.appendChild(anchor);
-
-        const clickEvent = new MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            view: window,
-        });
-        anchor.dispatchEvent(clickEvent);
-        // if (location.href.includes("/video/")) {
-        //     document.querySelector("a[href^='/video/'].video-awesome-img img").click()
-        //     setTimeout(() => {
-        //         // const newUrl = url.replace(/http(s)?:\/\/(www\.)?bilibili\.com/, '');
-        //         // console.warn(newUrl)
-        //         const bvId = extractBVId(url);
-        //         if (bvId) {
-        //             const targetUrl = `/video/${bvId}`;
-        //             history.pushState(null, '', targetUrl);
-        //             window.dispatchEvent(new Event('popstate'));
-        //         }
-        //     }, 1000);
-        // } else {
-        //     location.href = url;
-        // }
+    async function navigateToVideoIfNeeded(url) {
+        if (location.href.includes("/video/") && window.player && window.player.reload) {
+            // 以下为内部API，可能失效
+            const manifest = player.getManifest();
+            const pRegex = /[?&]p=(\d+)/;
+            const bvId = extractBVId(url);
+            const pMatch = url.match(pRegex);
+            let p = 1;
+            if (pMatch) {
+                p = parseInt(pMatch[1]);
+            }
+            if (bvId && bvId !== manifest.bvid) {
+                window.player.reload({bvid: bvId, p: p});
+                window.player.once(nano.EventType.Player_Play, async (e)=>{await playFromStart();});
+            }
+        } else {
+            if (!window.location.href.includes(extractBVId(url)))
+                location.href = url;
+        }
         
     }
 

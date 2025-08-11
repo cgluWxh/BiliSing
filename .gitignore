@@ -4,6 +4,8 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+*.xcuserstate
+
 # C extensions
 *.so
 

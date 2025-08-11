@@ -366,7 +366,10 @@ def on_next_song(data):
             room.played_songs.append(room.current_playing)
         
         # 添加系统消息
-        new_message = add_message_to_room(room_id, user_name, f'播放下一首：{room.current_playing.title}', 'system')
+        if user_name == '播放设备':
+            new_message = None
+        else:
+            new_message = add_message_to_room(room_id, user_name, f'播放下一首：{room.current_playing.title}', 'system')
         
         # 广播当前播放和播放列表更新
         emit('now_playing', {
