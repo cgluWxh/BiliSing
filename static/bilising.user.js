@@ -13,6 +13,7 @@
 const myURL = "https://sing.bilibiili.com";
 // const myURL = "http://localhost:11817" // For local testing
 
+
 /*!
  * Socket.IO v4.0.0
  * (c) 2014-2021 Guillermo Rauch
@@ -26,19 +27,19 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
 
 // bilising.user.js
 
-(function() {
+(function () {
     'use strict';
 
     const headerContentController = {
         originalText: '',
         temporaryContentTimer: null,
-        setOriginalText: function(content) {
+        setOriginalText: function (content) {
             this.originalText = content;
             if (this.temporaryContentTimer === null) {
                 document.getElementById('bilising-header-content').textContent = content;
             }
         },
-        setTemporaryText: function(content, duration = 5000) {
+        setTemporaryText: function (content, duration = 5000) {
             if (this.temporaryContentTimer) {
                 clearTimeout(this.temporaryContentTimer);
             }
@@ -53,7 +54,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
     function untilElement(selector) {
         return new Promise(resolve => {
             let timer = setTimeout(() => {
-                if(document.querySelector(selector)) {
+                if (document.querySelector(selector)) {
                     resolve();
                     return;
                 }
@@ -63,101 +64,101 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
     }
 
     function batchAddToFavList(bvList) {
-      const date = new Date();
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hour = String(date.getHours()).padStart(2, '0');
-      const minute = String(date.getMinutes()).padStart(2, '0');
-      const favTitle = `BiliSing ${year}${month}${day}`;
-      const favIntro = `BiliSing 自动添加收藏夹 - ${year}-${month}-${day} ${hour}:${minute}`;
-      const favPrivacy = 1; // 0: 公开, 1: 自己可见
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hour = String(date.getHours()).padStart(2, '0');
+        const minute = String(date.getMinutes()).padStart(2, '0');
+        const favTitle = `BiliSing ${year}${month}${day}`;
+        const favIntro = `BiliSing 自动添加收藏夹 - ${year}-${month}-${day} ${hour}:${minute}`;
+        const favPrivacy = 1; // 0: 公开, 1: 自己可见
 
-      // 🍪 获取 csrf_token
-      function getCsrf() {
-          return document.cookie.match(/bili_jct=([^;]+)/)?.[1] ?? '';
-      }
+        // 🍪 获取 csrf_token
+        function getCsrf() {
+            return document.cookie.match(/bili_jct=([^;]+)/)?.[1] ?? '';
+        }
 
-      // 🔧 通用 fetch 请求封装（自动附带 Cookie）
-      async function doPost(url, bodyObj) {
-          const body = new URLSearchParams(bodyObj);
-          const res = await fetch(url, {
-              method: 'POST',
-              credentials: 'include', // 🚨 关键：带上 Cookie
-              headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                  'Referer': 'https://www.bilibili.com/',
-              },
-              body: body.toString()
-          });
-          return await res.json();
-      }
+        // 🔧 通用 fetch 请求封装（自动附带 Cookie）
+        async function doPost(url, bodyObj) {
+            const body = new URLSearchParams(bodyObj);
+            const res = await fetch(url, {
+                method: 'POST',
+                credentials: 'include', // 🚨 关键：带上 Cookie
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Referer': 'https://www.bilibili.com/',
+                },
+                body: body.toString()
+            });
+            return await res.json();
+        }
 
-      // 🛠 创建收藏夹
-      async function createFavFolder(title, intro, privacy) {
-          const csrf = getCsrf();
-          if (!csrf) throw new Error('未获取到 csrf，可能未登录');
-          const res = await doPost('https://api.bilibili.com/x/v3/fav/folder/add', {
-              title,
-              intro,
-              privacy: String(privacy),
-              csrf
-          });
-          if (res.code === 0) {
-              headerContentController.setTemporaryText(`✅ 收藏夹创建成功: ${title}, 待添加视频`, 60000);
-              return res.data.id;
-          } else {
-              throw new Error(`❌ 创建失败: ${res.message}`);
-          }
-      }
+        // 🛠 创建收藏夹
+        async function createFavFolder(title, intro, privacy) {
+            const csrf = getCsrf();
+            if (!csrf) throw new Error('未获取到 csrf，可能未登录');
+            const res = await doPost('https://api.bilibili.com/x/v3/fav/folder/add', {
+                title,
+                intro,
+                privacy: String(privacy),
+                csrf
+            });
+            if (res.code === 0) {
+                headerContentController.setTemporaryText(`✅ 收藏夹创建成功: ${title}, 待添加视频`, 60000);
+                return res.data.id;
+            } else {
+                throw new Error(`❌ 创建失败: ${res.message}`);
+            }
+        }
 
-      // 🔄 BV号转aid
-      async function bv2aid(bv) {
-          const res = await fetch(`https://api.bilibili.com/x/web-interface/view?bvid=${bv}`, {
-              credentials: 'include'
-          });
-          const json = await res.json();
-          if (json.code !== 0) throw new Error(`❌ 无法解析BV号: ${bv}`);
-          return json.data.aid;
-      }
+        // 🔄 BV号转aid
+        async function bv2aid(bv) {
+            const res = await fetch(`https://api.bilibili.com/x/web-interface/view?bvid=${bv}`, {
+                credentials: 'include'
+            });
+            const json = await res.json();
+            if (json.code !== 0) throw new Error(`❌ 无法解析BV号: ${bv}`);
+            return json.data.aid;
+        }
 
-      // ➕ 添加视频到收藏夹
-      async function addToFav(aid, favId) {
-          const csrf = getCsrf();
-          const res = await doPost('https://api.bilibili.com/x/v3/fav/resource/deal', {
-              rid: aid,
-              type: '2',
-              add_media_ids: favId,
-              csrf
-          });
-          if (res.code === 0) {
-              headerContentController.setTemporaryText(`✅ 成功添加 aid=${aid}`, 60000);
-          } else {
-              headerContentController.setTemporaryText(`❌ 添加失败 aid=${aid}: ${res.message}`, 60000);
-          }
-      }
+        // ➕ 添加视频到收藏夹
+        async function addToFav(aid, favId) {
+            const csrf = getCsrf();
+            const res = await doPost('https://api.bilibili.com/x/v3/fav/resource/deal', {
+                rid: aid,
+                type: '2',
+                add_media_ids: favId,
+                csrf
+            });
+            if (res.code === 0) {
+                headerContentController.setTemporaryText(`✅ 成功添加 aid=${aid}`, 60000);
+            } else {
+                headerContentController.setTemporaryText(`❌ 添加失败 aid=${aid}: ${res.message}`, 60000);
+            }
+        }
 
-      // 🚀 主程序
-      (async function () {
-          try {
-              headerContentController.setTemporaryText(`🔄 开始批量收藏 ${bvList.length} 个视频...`, 60000);
-              const favId = await createFavFolder(favTitle, favIntro, favPrivacy);
-              for (const bv of bvList) {
-                  try {
-                      const aid = await bv2aid(bv);
-                      await addToFav(aid, favId);
-                      await new Promise(r => setTimeout(r, 500)); // 防止触发风控
-                  } catch (e) {
-                      console.error(`处理 BV ${bv} 时出错:`, e);
-                      headerContentController.setTemporaryText(`❌ 处理 BV ${bv} 失败: ${e.message}`, 60000);
-                  }
-              }
-              headerContentController.setTemporaryText('🎉 完成所有添加任务', 5000);
-          } catch (e) {
-              console.error('批量添加收藏夹出错:', e);
-              headerContentController.setTemporaryText('❌ 出错且无法继续执行:', 60000);
-          }
-      })();
+        // 🚀 主程序
+        (async function () {
+            try {
+                headerContentController.setTemporaryText(`🔄 开始批量收藏 ${bvList.length} 个视频...`, 60000);
+                const favId = await createFavFolder(favTitle, favIntro, favPrivacy);
+                for (const bv of bvList) {
+                    try {
+                        const aid = await bv2aid(bv);
+                        await addToFav(aid, favId);
+                        await new Promise(r => setTimeout(r, 500)); // 防止触发风控
+                    } catch (e) {
+                        console.error(`处理 BV ${bv} 时出错:`, e);
+                        headerContentController.setTemporaryText(`❌ 处理 BV ${bv} 失败: ${e.message}`, 60000);
+                    }
+                }
+                headerContentController.setTemporaryText('🎉 完成所有添加任务', 5000);
+            } catch (e) {
+                console.error('批量添加收藏夹出错:', e);
+                headerContentController.setTemporaryText('❌ 出错且无法继续执行:', 60000);
+            }
+        })();
     }
 
     let socket;
@@ -171,14 +172,14 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
     let nextSong = null;
 
     async function playFromStart() {
-        try { player.setHandoff(nano.HandoffKind.Abort); } catch(e) { console.warn('设置手动播放失败:', e); }
-        try { await player.setAutoplay(false); } catch(e) { console.warn('设置自动播放失败:', e); }
-        try { await player.seek(0); } catch(e) { console.warn('设置播放位置失败:', e); }
-        try { await player.setPlaybackRate(1); } catch(e) { console.warn('设置播放速度失败:', e); }
-        try { await player.setLoop(true); } catch(e) { console.warn('设置循环播放失败:', e); }
-        try { await player.setMuted(false); } catch(e) { console.warn('设置静音失败:', e); }
-        try { await player.play(); } catch(e) { console.warn('播放失败:', e); }
-        try { if (!document.querySelector("#bilibili-player").classList.contains("mode-webscreen")) document.querySelector(".bpx-player-ctrl-btn.bpx-player-ctrl-web").click(); } catch(e) { console.warn('全屏失败:', e); }
+        try { player.setHandoff(nano.HandoffKind.Abort); } catch (e) { console.warn('设置手动播放失败:', e); }
+        try { await player.setAutoplay(false); } catch (e) { console.warn('设置自动播放失败:', e); }
+        try { await player.seek(0); } catch (e) { console.warn('设置播放位置失败:', e); }
+        try { await player.setPlaybackRate(1); } catch (e) { console.warn('设置播放速度失败:', e); }
+        try { await player.setLoop(true); } catch (e) { console.warn('设置循环播放失败:', e); }
+        try { await player.setMuted(false); } catch (e) { console.warn('设置静音失败:', e); }
+        try { await player.play(); } catch (e) { console.warn('播放失败:', e); }
+        try { if (!document.querySelector("#bilibili-player").classList.contains("mode-webscreen")) document.querySelector(".bpx-player-ctrl-btn.bpx-player-ctrl-web").click(); } catch (e) { console.warn('全屏失败:', e); }
     }
 
     // 创建浮窗HTML
@@ -188,10 +189,26 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
 
         // patch: 无刷切换视频有可能会导致问题页面崩溃
         const desc = Object.getOwnPropertyDescriptor(Node.prototype, 'parentNode');
+
+        // 一个假的 node，只有 removeChild 空方法
+        const fakeNode = {
+            removeChild: function () {
+                console.warn("截获 removeChild 调用")
+                return null;
+            }
+        };
+
         Object.defineProperty(Node.prototype, 'parentNode', {
-            get: function() {
+            get: function () {
                 const val = desc.get.call(this);
-                return val || { removeChild: () => { console.warn("忽略了一个 parentNode 不存在的问题") } };
+                const stack = new Error().stack || '';
+                if (
+                    val === null &&
+                    (stack.includes('_removeScrollBars') || stack.includes('Reaction'))
+                ) {
+                    return fakeNode; // 返回假节点，防止 null.removeChild 报错
+                }
+                return val; // 正常返回
             }
         });
 
@@ -200,204 +217,204 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         floatingWindow.classList.add("bilising-collapsed");
         floatingWindow.style.opacity = '0.8';
         floatingWindow.innerHTML = `
-            <div id="bilising-header">
-                <span id="bilising-header-content">🎤 BiliSing</span>
-                <button id="bilising-toggle">+</button>
-            </div>
-            <div id="bilising-content">
-                <div id="bilising-roomInfo">
-                  <div id="bilising-connection">
-                      <input type="text" id="bilising-room-id" placeholder="房间ID" value="">
-                      <button id="bilising-connect">连接</button>
-                      <span id="bilising-status">未连接</span>
-                  </div>
-                  <div id="bilising-controls" style="display: none;">
-                      <div id="bilising-current">
-                          <strong>正在播放：</strong>
-                          <div id="bilising-current-song">暂无歌曲</div>
-                      </div>
-                      <div id="bilising-next">
-                          <strong>下一首：</strong>
-                          <div id="bilising-next-song">暂无歌曲</div>
-                      </div>
-                      <button id="bilising-play-next">切歌</button>
-                      <button id="bilising-batch-add-fav">批量添加收藏夹</button>
-                  </div>
+        <div id="bilising-header">
+            <span id="bilising-header-content">🎤 BiliSing</span>
+            <button id="bilising-toggle">+</button>
+        </div>
+        <div id="bilising-content">
+            <div id="bilising-roomInfo">
+                <div id="bilising-connection">
+                    <input type="text" id="bilising-room-id" placeholder="房间ID" value="">
+                    <button id="bilising-connect">连接</button>
+                    <span id="bilising-status">未连接</span>
                 </div>
-                <div id="bilising-roomQR-section">
-                  <strong id="bilising-noqr-text">二维码未生成，请先连接到一个房间。</strong>
-                  <div id="bilising-qr-code" style="display: none;">
-                      <canvas id="bilising-qr-image" alt="房间二维码"></canvas>
-                      <p>扫码点歌</p>
-                  </div>
+                <div id="bilising-controls" style="display: none;">
+                    <div id="bilising-current">
+                        <strong>正在播放：</strong>
+                        <div id="bilising-current-song">暂无歌曲</div>
+                    </div>
+                    <div id="bilising-next">
+                        <strong>下一首：</strong>
+                        <div id="bilising-next-song">暂无歌曲</div>
+                    </div>
+                    <button id="bilising-play-next">切歌</button>
+                    <button id="bilising-batch-add-fav">批量添加收藏夹</button>
                 </div>
             </div>
-        `;
+            <div id="bilising-roomQR-section">
+                <strong id="bilising-noqr-text">二维码未生成，请先连接到一个房间。</strong>
+                <div id="bilising-qr-code" style="display: none;">
+                    <canvas id="bilising-qr-image" alt="房间二维码"></canvas>
+                    <p>扫码点歌</p>
+                </div>
+            </div>
+        </div>
+    `;
 
         // 添加样式
         const style = document.createElement('style');
         style.textContent = `
-            #bilising-float {
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                width: calc(100vw - 40px);
-                background: rgba(0, 0, 0, 0.9);
-                color: white;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-                z-index: 10000;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                font-size: 12px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                z-index: 1145141919810;
-                font-size: 1.3em;
-            }
-            
-            #bilising-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 8px 12px;
-                background: rgba(0, 174, 236, 0.8);
-                border-radius: 8px 8px 0 0;
-                cursor: move;
-                font-weight: bold;
-            }
-            
-            #bilising-toggle {
-                background: none;
-                border: none;
-                color: white;
-                font-size: 16px;
-                cursor: pointer;
-                padding: 0;
-                width: 20px;
-                height: 20px;
-            }
-            
-            #bilising-content {
-                padding: 12px;
-                display: flex;
-            }
+        #bilising-float {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: calc(100vw - 40px);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1145141919810;
+            font-size: 1.3em;
+        }
+        
+        #bilising-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(0, 174, 236, 0.8);
+            border-radius: 8px 8px 0 0;
+            cursor: move;
+            font-weight: bold;
+        }
+        
+        #bilising-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+        }
+        
+        #bilising-content {
+            padding: 12px;
+            display: flex;
+        }
 
-            #bilising-content > div {
-                flex: 1;
-            }
-            
-            #bilising-connection {
-                margin-bottom: 12px;
-            }
-            
-            #bilising-connection input {
-                width: 120px;
-                padding: 4px 6px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                margin-right: 6px;
-                font-size: 12px;
-                color: black;
-            }
-            
-            #bilising-connection button {
-                padding: 4px 12px;
-                background: #00aeec;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 12px;
-            }
-            
-            #bilising-connection button:hover {
-                background: #0099d4;
-            }
-            
-            #bilising-status {
-                display: block;
-                margin-top: 6px;
-                font-size: 11px;
-                color: #ccc;
-            }
-            
-            #bilising-controls div {
-                margin-bottom: 8px;
-                padding: 6px;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 4px;
-            }
-            
-            #bilising-controls strong {
-                display: block;
-                margin-bottom: 4px;
-                color: #00aeec;
-            }
-            
-            #bilising-current-song, #bilising-next-song {
-                font-size: 11px;
-                line-height: 1.3;
-                color: #fff;
-            }
-            
-            #bilising-play-next,#bilising-batch-add-fav {
-                width: 100%;
-                padding: 8px;
-                background: #ff6b6b;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 12px;
-                font-weight: bold;
-            }
-            
-            #bilising-play-next:hover,#bilising-batch-add-fav:hover {
-                background: #ff5252;
-            }
+        #bilising-content > div {
+            flex: 1;
+        }
+        
+        #bilising-connection {
+            margin-bottom: 12px;
+        }
+        
+        #bilising-connection input {
+            width: 120px;
+            padding: 4px 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 6px;
+            font-size: 12px;
+            color: black;
+        }
+        
+        #bilising-connection button {
+            padding: 4px 12px;
+            background: #00aeec;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        #bilising-connection button:hover {
+            background: #0099d4;
+        }
+        
+        #bilising-status {
+            display: block;
+            margin-top: 6px;
+            font-size: 11px;
+            color: #ccc;
+        }
+        
+        #bilising-controls div {
+            margin-bottom: 8px;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        #bilising-controls strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #00aeec;
+        }
+        
+        #bilising-current-song, #bilising-next-song {
+            font-size: 11px;
+            line-height: 1.3;
+            color: #fff;
+        }
+        
+        #bilising-play-next,#bilising-batch-add-fav {
+            width: 100%;
+            padding: 8px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        #bilising-play-next:hover,#bilising-batch-add-fav:hover {
+            background: #ff5252;
+        }
 
-            #bilising-play-next:disabled,#bilising-batch-add-fav:disabled {
-                background: #666;
-                cursor: not-allowed;
-            }
+        #bilising-play-next:disabled,#bilising-batch-add-fav:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
 
-            #bilising-batch-add-fav { margin-top: 8px; }
+        #bilising-batch-add-fav { margin-top: 8px; }
 
-            div#bilising-roomQR-section {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
+        div#bilising-roomQR-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-            div#bilising-qr-code {
-                text-align: center;
-            }
-            
-            .bilising-collapsed #bilising-content {
-                display: none;
-            }
-        `;
+        div#bilising-qr-code {
+            text-align: center;
+        }
+        
+        .bilising-collapsed #bilising-content {
+            display: none;
+        }
+    `;
 
         document.head.appendChild(style);
         document.body.appendChild(floatingWindow);
 
         // 添加拖拽功能
         makeDraggable(floatingWindow);
-        
+
         // 添加事件监听器
         setupEventListeners();
-        
+
         // 恢复上次的房间ID
         let lastRoomId = sessionStorage.getItem('bilising-room-id');
         const urlParams = new URLSearchParams(window.location.search);
         if (!lastRoomId) {
-          lastRoomId = urlParams.get('bilising-room-id');
-          if (lastRoomId) {
-              sessionStorage.setItem('bilising-room-id', lastRoomId);
-          }
+            lastRoomId = urlParams.get('bilising-room-id');
+            if (lastRoomId) {
+                sessionStorage.setItem('bilising-room-id', lastRoomId);
+            }
         }
         if (lastRoomId) {
-          document.getElementById('bilising-room-id').value = lastRoomId;
-          document.getElementById('bilising-connect').click();
+            document.getElementById('bilising-room-id').value = lastRoomId;
+            document.getElementById('bilising-connect').click();
         }
 
         if (location.href.includes('/video/')) {
@@ -416,20 +433,20 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
     // 设置事件监听器
     function setupEventListeners() {
         // 折叠/展开
-        document.getElementById('bilising-toggle').addEventListener('click', function() {
+        document.getElementById('bilising-toggle').addEventListener('click', function () {
             const floatWindow = document.getElementById('bilising-float');
             floatWindow.classList.toggle('bilising-collapsed');
             this.textContent = floatWindow.classList.contains('bilising-collapsed') ? '+' : '−';
         });
 
         // 连接按钮
-        document.getElementById('bilising-connect').addEventListener('click', function() {
+        document.getElementById('bilising-connect').addEventListener('click', function () {
             const roomId = document.getElementById('bilising-room-id').value.trim();
             if (!roomId) {
                 alert('请输入房间ID');
                 return;
             }
-            
+
             if (isConnected) {
                 disconnectSocket();
             } else {
@@ -438,7 +455,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         });
 
         // 播放下一首按钮
-        document.getElementById('bilising-play-next').addEventListener('click', function() {
+        document.getElementById('bilising-play-next').addEventListener('click', function () {
             if (socket && isConnected && currentRoom) {
                 socket.emit('next_song', {
                     room_id: currentRoom,
@@ -446,7 +463,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                 });
             }
         });
-        document.getElementById('bilising-batch-add-fav').addEventListener('click', function() {
+        document.getElementById('bilising-batch-add-fav').addEventListener('click', function () {
             const listAll = played_songs.concat(play_list);
             if (listAll.length > 0) {
                 const uniqueBvList = [...listAll.map(song => extractBVId(song.url)).filter(bv => bv)];
@@ -459,7 +476,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         });
 
         // 回车键连接
-        document.getElementById('bilising-room-id').addEventListener('keypress', function(e) {
+        document.getElementById('bilising-room-id').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 document.getElementById('bilising-connect').click();
             }
@@ -471,25 +488,25 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         try {
             // 保存房间ID
             sessionStorage.setItem('bilising-room-id', roomId);
-            
+
             // 初始化Socket.IO连接
             socket = io(myURL);
-            
+
             // 设置Socket事件监听器
             setupSocketListeners();
-            
+
             // 更新状态
             updateStatus('连接中...');
-            
+
             // 加入房间
             socket.emit('join_room', {
                 room_id: roomId,
                 user_name: currentUser,
                 user_type: currentUserType
             });
-            
+
             currentRoom = roomId;
-            
+
         } catch (error) {
             console.error('连接失败:', error);
             updateStatus('连接失败');
@@ -514,11 +531,11 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
 
     // 设置Socket事件监听器
     function setupSocketListeners() {
-        socket.on('connect', function() {
+        socket.on('connect', function () {
             console.log('Socket.IO连接成功');
         });
 
-        socket.on('room_joined', function(data) {
+        socket.on('room_joined', function (data) {
             isConnected = true;
             updateStatus(`已连接到房间: ${currentRoom}`);
             document.getElementById('bilising-noqr-text').style.display = 'none';
@@ -536,18 +553,18 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
 
             document.getElementById('bilising-connect').textContent = '断开';
             document.getElementById('bilising-controls').style.display = 'block';
-            
+
             // 更新当前播放和下一首
             updateCurrentPlaying(data.current_playing);
             updateNextSong(data.play_list);
             played_songs = data.played_songs || [];
         });
 
-        socket.on('now_playing', function(data) {
+        socket.on('now_playing', function (data) {
             updateCurrentPlaying(data.current_playing);
         });
 
-        socket.on('playlist_updated', function(data) {
+        socket.on('playlist_updated', function (data) {
             updateNextSong(data.play_list);
             played_songs = data.played_songs || [];
             if (!document.getElementById('bilising-float').classList.contains('bilising-collapsed'))
@@ -555,26 +572,26 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             console.warn('播放列表已更新:', played_songs);
         });
 
-        socket.on('error', function(data) {
+        socket.on('error', function (data) {
             console.error('Socket错误:', data.message);
             updateStatus('错误: ' + data.message);
         });
 
-        socket.on('disconnect', function() {
+        socket.on('disconnect', function () {
             isConnected = false;
             updateStatus('连接断开');
             document.getElementById('bilising-connect').textContent = '连接';
             document.getElementById('bilising-controls').style.display = 'none';
         });
 
-        socket.on('new_message', function(data) {
+        socket.on('new_message', function (data) {
             if (!data.message) return;
             const message = data.message;
             let msgText;
             if (message.message_type === "system") {
-              msgText = `${message.user_name} ${message.content}`;
+                msgText = `${message.user_name} ${message.content}`;
             } else {
-              msgText = `${message.user_name} 说: ${message.content}`;
+                msgText = `${message.user_name} 说: ${message.content}`;
             }
             headerContentController.setTemporaryText(msgText);
         });
@@ -589,13 +606,13 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
     async function updateCurrentPlaying(song) {
         currentPlaying = song;
         const currentSongElement = document.getElementById('bilising-current-song');
-        
+
         if (song && song.title) {
             currentSongElement.innerHTML = `
-                <div>${song.title}</div>
-                <div style="color: #ccc; font-size: 10px;">UP主: ${song.producer}</div>
-            `;
-            
+            <div>${song.title}</div>
+            <div style="color: #ccc; font-size: 10px;">UP主: ${song.producer}</div>
+        `;
+
             navigateToVideoIfNeeded(song.url);
         } else {
             currentSongElement.textContent = '暂无歌曲';
@@ -611,13 +628,13 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         play_list = playlist || [];
         const nextSongElement = document.getElementById('bilising-next-song');
         const playNextButton = document.getElementById('bilising-play-next');
-        
+
         if (playlist && playlist.length > 0) {
             nextSong = playlist[0];
             nextSongElement.innerHTML = `
-                <div>${nextSong.title}</div>
-                <div style="color: #ccc; font-size: 10px;">UP主: ${nextSong.producer}</div>
-            `;
+            <div>${nextSong.title}</div>
+            <div style="color: #ccc; font-size: 10px;">UP主: ${nextSong.producer}</div>
+        `;
             headerContentController.setOriginalText(`下一首: ${nextSong.title}; 正播放: ${currentPlaying ? currentPlaying.title : '暂无歌曲'}`);
         } else {
             nextSong = null;
@@ -645,14 +662,14 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                 p = parseInt(pMatch[1]);
             }
             if (bvId && bvId !== manifest.bvid) {
-                window.player.reload({bvid: bvId, p: p});
-                window.player.once(nano.EventType.Player_Play, async (e)=>{await playFromStart();});
+                window.player.reload({ bvid: bvId, p: p });
+                window.player.once(nano.EventType.Player_Play, async (e) => { await playFromStart(); });
             }
         } else {
             if (!window.location.href.includes(extractBVId(url)))
                 location.href = url;
         }
-        
+
     }
 
     // 使浮窗可拖拽
@@ -719,5 +736,5 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
 })();
 
 if (typeof GM_info !== 'undefined' && location.href.includes(myURL)) {
-  window.__BILISING_USERSCRIPT_ENABLED__ = true;
+    window.__BILISING_USERSCRIPT_ENABLED__ = true;
 }
