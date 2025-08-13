@@ -281,7 +281,7 @@
                 deleteCookie('bilising-room-id');
             }
 
-            myURL = new URLSearchParams(window.location.search).get("bilising-server") || sessionStorage.getItem("bilising-server") || getCookie("bilising-server") || "sing.bilibiili.com";
+            myURL = new URLSearchParams(window.location.search).get("bilising-server") || sessionStorage.getItem("bilising-server") || getCookie("bilising-server");
             if (myURL) {
                 sessionStorage.setItem('bilising-server', myURL);
                 deleteCookie('bilising-server');

@@ -92,6 +92,9 @@ document.addEventListener("DOMContentLoaded", function(){
     
     // 绑定点击事件
     startButton.addEventListener("click", startBili);
+    document.getElementById("githublink").onclick = () => {
+        webkit.messageHandlers.controller.postMessage('githublink');
+    }
     
     // 输入验证
     userscriptInput.addEventListener("blur", function() {

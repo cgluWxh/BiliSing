@@ -209,8 +209,13 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         let msg = message.body as! String;
+        if (msg == "githublink") {
+            guard let url = URL(string: "https://github.com/cgluWxh/BiliSing/blob/main/README.md") else { return };
+            UIApplication.shared.open(url);
+            return;
+        }
         let splitted = msg.split(separator: "$").map { String($0) };
-        self.loadUserScriptAndEnterRoom(from: "https://" + splitted[1] + "/static/bilising.user.js", enterUrl: "https://bilibili.com/?bilising-room-id=" + splitted[0]);
+        self.loadUserScriptAndEnterRoom(from: "https://" + splitted[1] + "/static/bilising.user.js", enterUrl: "https://bilibili.com/?bilising-room-id=" + splitted[0] + "&bilising-server=" + splitted[1]);
     }
     
 
