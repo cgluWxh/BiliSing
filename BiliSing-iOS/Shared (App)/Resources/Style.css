@@ -1,7 +1,4 @@
 * {
-    -webkit-user-select: none;
-    -webkit-user-drag: none;
-    user-select: none;
     cursor: default;
     box-sizing: border-box;
 }

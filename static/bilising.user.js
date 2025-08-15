@@ -288,6 +288,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         }
         if (!lastRoomId) return;
         if (!myURL) return;
+        if (lastRoomId === '##invalid##') return;
 
         if (!/^http/.test(myURL)) {
             myURL = "https://" + myURL;
@@ -603,6 +604,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         document.getElementById('bilising-controls').style.display = 'none';
         document.getElementById('bilising-noqr-text').style.display = 'block';
         document.getElementById('bilising-qr-code').style.display = 'none';
+        document.getElementById('bilising-float').remove();
         sessionStorage.removeItem('bilising-room-id');
     }
 
