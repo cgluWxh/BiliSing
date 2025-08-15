@@ -2,17 +2,21 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 20px;
-    background-color: #202123;
-    color: white;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    color: #e0e0e0;
+    transition: all 0.3s ease;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    background: #2a2d31;
+    background: rgba(45, 50, 55, 0.9);
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
 }
 
 .container.player {
@@ -22,7 +26,18 @@ body {
 .header {
     text-align: center;
     margin-bottom: 30px;
-    color: #ddd;
+    color: #d0d0d0;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.header h1 {
+    background: linear-gradient(135deg, #e0e0e0 0%, #a0a0a0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2.5em;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .join-form {
@@ -34,21 +49,36 @@ body {
 }
 
 .join-form input, .join-form select, .join-form button {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
     font-size: 16px;
+    background: rgba(60, 65, 70, 0.8);
+    color: #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.join-form input:focus, .join-form select:focus {
+    outline: none;
+    border-color: #7bc6e6;
+    background: rgba(70, 75, 80, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(123, 198, 230, 0.3);
 }
 
 .join-form button {
-    background-color: #00a1d6;
-    color: white;
+    background: linear-gradient(135deg, #6bb6d6 0%, #4a9bc4 100%);
+    color: #ffffff;
     border: none;
     cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 .join-form button:hover {
-    background-color: #0084b3;
+    background: linear-gradient(135deg, #7bc6e6 0%, #5aabde 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .room-info {
@@ -78,18 +108,27 @@ body {
 .no-video {
     padding: 60px;
     text-align: center;
-    background-color: rgb(76 88 104);
-    border-radius: 10px;
-    color: #ddd;
+    background: linear-gradient(135deg, #3a404a 0%, #4a505a 100%);
+    border-radius: 15px;
+    color: #b0b0b0;
     font-size: 18px;
+    border: 2px dashed rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
 }
 
 .song-card {
     margin: 20px 0;
-    padding: 15px;
-    background-color: rgb(82 86 93);
-    border-radius: 8px;
-    border-left: 4px solid #00a1d6;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(55, 60, 68, 0.8) 0%, rgba(45, 50, 58, 0.8) 100%);
+    border-radius: 12px;
+    border-left: 4px solid #7bc6e6;
+    transition: all 0.3s ease;
+    animation: slideIn 0.5s ease-out;
+}
+
+.song-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .song-card h4 {
@@ -100,30 +139,58 @@ body {
 .add-song {
     margin: 20px 0;
     padding: 20px;
-    background-color: rgb(82 86 93);
-    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(55, 60, 68, 0.8) 0%, rgba(45, 50, 58, 0.8) 100%);
+    border-radius: 12px;
+    animation: slideIn 0.5s ease-out;
 }
 
 .add-song h3 {
     margin: 0 0 15px;
-    color: #ddd;
+    color: #d0d0d0;
+}
+
+.add-song-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: nowrap;
 }
 
 .add-song input {
-    width: 70%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-right: 10px;
+    flex: 1;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    background: rgba(60, 65, 70, 0.8);
+    color: #e0e0e0;
+    transition: all 0.3s ease;
+    min-width: 0;
+}
+
+.add-song input:focus {
+    outline: none;
+    border-color: #7bc6e6;
+    background: rgba(70, 75, 80, 0.9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(123, 198, 230, 0.3);
 }
 
 .add-song button {
-    padding: 10px 20px;
-    background-color: #00a1d6;
-    color: white;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #6bb6d6 0%, #4a9bc4 100%);
+    color: #ffffff;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.add-song button:hover {
+    background: linear-gradient(135deg, #7bc6e6 0%, #5aabde 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .playlist {
@@ -139,12 +206,20 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    background-color: rgb(76 88 104);
+    padding: 18px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, rgba(55, 65, 75, 0.8) 0%, rgba(45, 55, 65, 0.8) 100%);
     flex-wrap: wrap;
+    transition: all 0.3s ease;
+    animation: slideIn 0.5s ease-out;
+}
+
+.song-item:hover {
+    transform: translateX(8px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    border-color: rgba(255,255,255,0.2);
 }
 
 .song-info {
@@ -163,35 +238,63 @@ body {
 
 .song-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 .song-actions button {
-    padding: 5px 10px;
+    padding: 8px 12px;
     border: none;
-    border-radius: 3px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: rgba(100, 120, 140, 0.8);
+    color: #ffffff;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.song-actions button:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.song-actions button:active {
+    transform: translateY(0) scale(0.95);
 }
 
 .move-up {
-    background-color: #28a745;
-    color: white;
+    background: linear-gradient(135deg, #6bb6d6 0%, #4a9bc4 100%);
+}
+
+.move-up:hover {
+    background: linear-gradient(135deg, #7bc6e6 0%, #5aabde 100%);
 }
 
 .move-down {
-    background-color: #007bff;
-    color: white;
+    background: linear-gradient(135deg, #6bb6d6 0%, #4a9bc4 100%);
+}
+
+.move-down:hover {
+    background: linear-gradient(135deg, #7bc6e6 0%, #5aabde 100%);
 }
 
 .remove {
-    background-color: #dc3545;
-    color: white;
+    background: linear-gradient(135deg, #8b6b6b 0%, #7b5b5b 100%);
+}
+
+.remove:hover {
+    background: linear-gradient(135deg, #9b7b7b 0%, #8b6b6b 100%);
 }
 
 .replay-btn {
-    background-color: #17a2b8;
-    color: white;
+    background: linear-gradient(135deg, #6bb6d6 0%, #4a9bc4 100%);
+}
+
+.replay-btn:hover {
+    background: linear-gradient(135deg, #7bc6e6 0%, #5aabde 100%);
 }
 
 .chat-section {
@@ -201,31 +304,38 @@ body {
 .chat-messages {
     height: 300px;
     overflow-y: auto;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
     padding: 15px;
     margin-bottom: 15px;
-    background-color: rgb(76 88 104);
+    background: linear-gradient(135deg, rgba(55, 65, 75, 0.6) 0%, rgba(45, 55, 65, 0.6) 100%);
+    transition: all 0.3s ease;
 }
 
 .chat-message {
-    margin-bottom: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
     max-width: 80%;
     word-wrap: break-word;
+    animation: messageSlide 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+.chat-message:hover {
+    transform: translateX(4px);
 }
 
 .chat-message.user {
-    background-color: rgb(149 171 171);
-    color: #000;
+    background: linear-gradient(135deg, rgba(100, 120, 140, 0.8) 0%, rgba(80, 100, 120, 0.8) 100%);
+    color: #f0f0f0;
     margin-left: auto;
     text-align: right;
 }
 
 .chat-message.system {
-    background-color: #2a2d31;
-    color: #ddd;
+    background: linear-gradient(135deg, rgba(60, 65, 70, 0.8) 0%, rgba(50, 55, 60, 0.8) 100%);
+    color: #c0c0c0;
     font-style: italic;
 }
 
@@ -252,44 +362,77 @@ body {
 
 .chat-input input {
     flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
     font-size: 14px;
     max-width: 100%;
+    background: rgba(60, 65, 70, 0.8);
+    color: #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.chat-input input:focus {
+    outline: none;
+    border-color: #7bc6e6;
+    background: rgba(70, 75, 80, 0.9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(123, 198, 230, 0.3);
 }
 
 .chat-input button {
-    padding: 10px 20px;
-    background-color: #00a1d6;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.chat-input button:hover {
-    background-color: #0084b3;
-}
-
-.next-song-btn {
-    padding: 15px 30px;
-    background-color: #28a745;
-    color: white;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #6bb6d6 0%, #4a9bc4 100%);
+    color: #ffffff;
     border: none;
     border-radius: 8px;
     cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.chat-input button:hover {
+    background: linear-gradient(135deg, #7bc6e6 0%, #5aabde 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.next-song-btn {
+    padding: 16px 30px;
+    background: linear-gradient(135deg, #6bb6d6 0%, #4a9bc4 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
     font-size: 16px;
     width: 100%;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.next-song-btn:hover {
+    background: linear-gradient(135deg, #7bc6e6 0%, #5aabde 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
 }
 
 .error {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 10px;
-    border-radius: 5px;
+    background: linear-gradient(135deg, rgba(139, 69, 69, 0.9) 0%, rgba(119, 59, 59, 0.9) 100%);
+    color: #f0f0f0;
+    padding: 12px 16px;
+    border-radius: 8px;
     margin: 10px 0;
+    border-left: 4px solid #ef4444;
+    animation: slideIn 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+.error:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(139, 69, 69, 0.3);
 }
 
 @media screen and (max-width: 768px) {
@@ -297,4 +440,114 @@ body {
         flex-direction: column;
     }
     
+    .add-song-input-row {
+        flex-wrap: wrap;
+    }
+    
+    .song-actions {
+        gap: 6px;
+    }
+    
+    .song-actions button {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+}
+
+/* 动画效果 */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes messageSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.container {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.video-container iframe {
+    transition: all 0.3s ease;
+}
+
+.video-container iframe:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+/* 滚动条美化 */
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+
+/* 加载状态动画 */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    /* animation: pulse 1.5s infinite; */
+}
+
+/* 焦点状态增强 */
+button:focus, input:focus, select:focus {
+    outline: 2px solid rgba(123, 198, 230, 0.7);
+    outline-offset: 2px;
+}
+
+/* 选择状态 */
+::selection {
+    background: rgba(123, 198, 230, 0.4);
+    color: #f0f0f0;
+}
+
+/* 链接样式 */
+a {
+    color: #7bc6e6;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #8bd6f6;
+    text-decoration: underline;
 }

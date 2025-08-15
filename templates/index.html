@@ -31,10 +31,10 @@
             <div id="master-view" class="master-view">
                 <div id="masterInfo">
                     <span id="next-song-info">
-                        <span>下一首：</span>
+                        <span>⏭️ 下一首：</span>
                         <span id="next-song-content">暂无歌曲</span>
                     </span>
-                    <span style="color:lightblue;" onclick="playNextSong()">切歌</span>
+                    <span style="color:#8fa7b3;" onclick="playNextSong()">⏭️ 切歌</span>
                 </div>
                 <div class="video-container">
                     <div id="video-player"></div>
@@ -45,20 +45,22 @@
             <div id="slave-view" class="slave-view">
                 <div id="basicInfo">
                     <div id="current-song-info" class="song-card">
-                        <h4>正在播放：</h4>
+                        <h4>🎶 正在播放：</h4>
                         <div id="current-song-content">暂无歌曲</div>
                     </div>
 
                     <div class="add-song">
-                        <h3>添加歌曲</h3>
-                        <input type="text" id="bilibili-url" placeholder="粘贴哔哩哔哩分享链接">
-                        <button id="add-song-btn" onclick="addSong()">点歌</button>
+                        <h3>🎵 添加歌曲</h3>
+                        <div class="add-song-input-row">
+                            <input type="text" id="bilibili-url" placeholder="🔗 粘贴哔哩哔哩分享链接">
+                            <button id="add-song-btn" onclick="addSong()">➕</button>
+                        </div>
                     </div>
 
                     <!-- 播放列表 -->
-                    <button class="next-song-btn" onclick="playNextSong()">切歌</button>
+                    <button class="next-song-btn" onclick="playNextSong()">⏭️ 切歌</button>
                     <div class="playlist">
-                        <h3>播放列表</h3>
+                        <h3>📋 播放列表</h3>
                         <div id="playlist-container">
                             <p>暂无歌曲</p>
                         </div>
@@ -69,7 +71,7 @@
 
                     <!-- 已播放歌曲列表 -->
                     <div class="playlist">
-                        <h3>已播放歌曲</h3>
+                        <h3>✅ 已播放歌曲</h3>
                         <div id="played-songs-container">
                             <p>暂无已播放歌曲</p>
                         </div>
@@ -77,13 +79,13 @@
 
                     <!-- 聊天区域 -->
                     <div class="chat-section">
-                        <h3>消息</h3>
+                        <h3>💬 消息</h3>
                         <div id="chat-messages" class="chat-messages">
                             <p>暂无消息</p>
                         </div>
                         <div class="chat-input">
-                            <input type="text" id="chat-message-input" placeholder="输入消息..." maxlength="200">
-                            <button onclick="sendMessage()">发送</button>
+                            <input type="text" id="chat-message-input" placeholder="💭 输入消息..." maxlength="200">
+                            <button onclick="sendMessage()">📤 发送</button>
                         </div>
                     </div>
                     

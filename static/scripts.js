@@ -11,7 +11,7 @@ function joinRoom() {
     const userType = document.getElementById('user-type').value;
     
     if (!roomId || !userName) {
-        showError('请填写房间ID和用户名');
+        showError('❌ 请填写房间ID和用户名');
         return;
     }
 
@@ -25,18 +25,18 @@ function joinRoom() {
 
     if (userType === 'master') {
         if (browser.isAppleMobile) {
-            if (confirm("是否需要安装 BiliSing App? 如已安装请点击取消并使用 App!")) {
+            if (confirm("📱 是否需要安装 BiliSing App? 如已安装请点击取消并使用 App!")) {
                 location.href = `https://apps.apple.com/cn/app/bilising/id6749165474`;
             }
         } else if (browser.isMobile) {
-            if (confirm("您需要下载安卓客户端以正常使用, 是否下载? 如已安装请点击取消并使用 App!")) {
+            if (confirm("📱 您需要下载安卓客户端以正常使用, 是否下载? 如已安装请点击取消并使用 App!")) {
                 location.href = `/static/BiliSing_1.0.apk`;
             }
         } else {
             if (window.__BILISING_USERSCRIPT_ENABLED__) {
                 location.href = `https://bilibili.com/?bilising-room-id=${roomId}&bilising-server=${location.protocol}//${location.host}`;
             } else {
-                alert("您需要先安装浏览器插件才能正常使用！")
+                alert("⚠️ 您需要先安装浏览器插件才能正常使用！")
                 location.pathname = "/static/bilising.user.js";
             }
         }
@@ -77,10 +77,10 @@ function setupSocketListeners() {
             document.getElementById('basicInfo').prepend(roomTitleEle)
         }
         roomTitleEle.innerHTML = `
-            <p>房间: ${currentRoom} <span id="bilising-toggle-text">单击展示点歌二维码</span></p>
+            <p>🏠 房间: ${currentRoom} <span id="bilising-toggle-text">📱 单击展示点歌二维码</span></p>
             <div id="bilising-qr-code" style="display: none; text-align: center;">
                 <canvas id="bilising-qr-image"></canvas>
-                <p>扫码加入房间</p>
+                <p>📱 扫码加入房间</p>
             </div>
         `;
         roomTitleEle.addEventListener('click', function() {
@@ -88,7 +88,7 @@ function setupSocketListeners() {
             const toggleText = document.getElementById('bilising-toggle-text');
             if (qrCodeSection.style.display === 'none') {
                 qrCodeSection.style.display = 'block';
-                toggleText.textContent = '单击隐藏点歌二维码';
+                toggleText.textContent = '🙈 单击隐藏点歌二维码';
                 const maxWidth = 480 / (window.devicePixelRatio || 1);
                 const rect = qrCodeSection.getBoundingClientRect();
                 const width = Math.min(maxWidth, rect.width * 0.8);
@@ -98,7 +98,7 @@ function setupSocketListeners() {
                     errorCorrectionLevel: 'H'
                 })
             } else {
-                toggleText.textContent = '单击展示点歌二维码';
+                toggleText.textContent = '📱 单击展示点歌二维码';
                 qrCodeSection.style.display = 'none';
             }
         });
@@ -197,10 +197,10 @@ function updatePlaylist(playlist) {
                 </div>
                 ${currentUserType === 'slave' ? `
                 <div class="song-actions">
-                <button class="move-up" onclick="moveSong(${index}, 0)" ${index === 0 ? 'disabled' : ''}>顶</button>
-                    <button class="move-up" onclick="moveSong(${index}, ${index - 1})" ${index === 0 ? 'disabled' : ''}>上</button>
-                    <button class="move-down" onclick="moveSong(${index}, ${index + 1})" ${index === playlist.length - 1 ? 'disabled' : ''}>下</button>
-                    <button class="remove" onclick="removeSong(${index})">删</button>
+                <button class="move-up" onclick="moveSong(${index}, 0)" ${index === 0 ? 'disabled' : ''}>⏫</button>
+                    <button class="move-up" onclick="moveSong(${index}, ${index - 1})" ${index === 0 ? 'disabled' : ''}>⬆️</button>
+                    <button class="move-down" onclick="moveSong(${index}, ${index + 1})" ${index === playlist.length - 1 ? 'disabled' : ''}>⬇️</button>
+                    <button class="remove" onclick="removeSong(${index})">❎</button>
                 </div>
                 ` : ''}
             </div>
@@ -227,7 +227,7 @@ function updatePlayedSongs(playedSongs) {
                 </div>
                 ${currentUserType === 'slave' ? `
                 <div class="song-actions">
-                    <button class="replay-btn" onclick="replaySong(${index})">重播</button>
+                    <button class="replay-btn" onclick="replaySong(${index})">🔄</button>
                 </div>
                 ` : ''}
             </div>
@@ -300,18 +300,18 @@ function addSong() {
     const url = document.getElementById('bilibili-url').value.trim();
     
     if (!url) {
-        showError('请输入哔哩哔哩链接');
+        showError('❌ 请输入哔哩哔哩链接');
         return;
     }
     
     if (!url.includes('bilibili.com') && !url.includes('b23.tv') && !url.includes('bili2233.cn')) {
-        showError('请输入有效的哔哩哔哩链接');
+        showError('❌ 请输入有效的哔哩哔哩链接');
         return;
     }
 
     const matchedUrl = /https?:\/\/[^\s"'<>()]+/.exec(url);
     if (!matchedUrl) {
-        showError('请输入有效的哔哩哔哩链接');
+        showError('❌ 请输入有效的哔哩哔哩链接');
         return;
     }
 
