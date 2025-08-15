@@ -1,40 +1,3 @@
-(function(innerWindow) {
-    const u = navigator.userAgent;
-
-    let isSafari = false;
-    try {
-        // 由于 Safari 不支持正则表达式的 look behind, 所以据此判断是否为 Safari
-        new RegExp('(?<!a)b');
-    } catch (e) {
-        isSafari = true;
-    }
-    const versions = {
-        trident: u.indexOf('Trident') > -1, // IE内核
-        presto: u.indexOf('Presto') > -1, // opera内核
-        webKit: u.match(/AppleWebKit/i), // 苹果、谷歌内核
-        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') === -1, // 火狐内核
-        mobile: !!u.match(/AppleWebKit.*Mobile.*/i), // 是否为移动终端
-        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), // ios终端
-        android: !!u.match(/Android|Linux/i), // android终端或者uc浏览器
-        iPhone: /iPhone/i.test(u), // 是否为iPhone或者QQHD浏览器
-        iPad: /iPad/i.test(u), // 是否iPad
-        webApp: /Safari/i.test(u), // 是否web应该程序，没有头部与底部
-        weixin: /MicroMessenger/i.test(u), // 是否微信 （2015-01-22新增）
-        qq: /\sQQ/i.test(u),
-        mac: /Mac OS/i.test(u),
-        chrome: /chrome/i.test(u),
-        safari: isSafari,
-        windows: /Windows/i.test(u),
-    };
-
-    innerWindow.browser = {
-        ...versions,
-        isMobile: ('ontouchstart' in window && (versions.mobile || versions.android || versions.ios || versions.mac)),
-        isAppleMobile: (versions.ios || versions.mac) && ('ontouchstart' in window),
-        isMacSafari: (versions.mac && (!versions.chrome && !versions.gecko)),
-    };
-})(window);
-
 let socket;
 let currentRoom = null;
 let currentUser = null;
@@ -61,16 +24,19 @@ function joinRoom() {
     }));
 
     if (userType === 'master') {
-        if ((!browser.isAppleMobile) && browser.isMobile) {
-            if (confirm("您需要下载安卓客户端以正常使用，是否下载？")) {
+        if (browser.isAppleMobile) {
+            if (confirm("是否需要安装 BiliSing App? 如已安装请点击取消并使用 App!")) {
+                location.href = `https://apps.apple.com/cn/app/bilising/id6749165474`;
+            }
+        } else if (browser.isMobile) {
+            if (confirm("您需要下载安卓客户端以正常使用, 是否下载? 如已安装请点击取消并使用 App!")) {
                 location.href = `/static/BiliSing_1.0.apk`;
             }
         } else {
-            if (confirm("您是否已安装 BiliSing 插件或应用？")) {
+            if (window.__BILISING_USERSCRIPT_ENABLED__) {
                 location.href = `https://bilibili.com/?bilising-room-id=${roomId}&bilising-server=${location.protocol}//${location.host}`;
-            } else if (browser.isAppleMobile) {
-                location.href = `https://testflight.apple.com/join/K2ZQzyUA`;
             } else {
+                alert("您需要先安装浏览器插件才能正常使用！")
                 location.pathname = "/static/bilising.user.js";
             }
         }
