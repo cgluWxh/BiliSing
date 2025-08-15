@@ -225,6 +225,10 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             removeChild: function () {
                 console.warn("截获 removeChild 调用")
                 return null;
+            },
+            appendChild: function () {
+                console.warn("截获 appendChild 调用")
+                return null;
             }
         };
 
