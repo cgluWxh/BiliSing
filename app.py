@@ -269,6 +269,33 @@ def on_add_song(data):
     if not rooms[room_id].current_playing:
         # 如果当前没有播放歌曲，立即播放新添加的歌曲
         on_next_song({'room_id': room_id, 'user_name': user_name})
+        
+        
+@socketio.on('request_playlist_update')
+def on_request_playlist_update(data):
+    room_id = data['room_id']
+    
+    if room_id not in rooms:
+        emit('error', {'message': '房间不存在'})
+        return
+
+    # 更新房间活跃时间
+    update_room_activity(room_id)
+
+    emit('playlist_updated', {
+        'play_list': [{
+            'title': song.title,
+            'producer': song.producer,
+            'url': song.url
+        } for song in rooms[room_id].play_list],
+        'played_songs': [{
+            'title': song.title,
+            'producer': song.producer,
+            'url': song.url
+        } for song in rooms[room_id].played_songs]
+    })
+    
+    return
 
 @socketio.on('remove_song')
 def on_remove_song(data):

@@ -428,3 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     userTypeSelect.dispatchEvent(new Event('change'));
 });
+
+document.addEventListener('visibilitychange', function() {
+    socket.emit('request_playlist_update', { room_id: currentRoom });
+});
