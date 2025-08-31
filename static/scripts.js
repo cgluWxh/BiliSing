@@ -62,46 +62,62 @@ function joinRoom(defaultuser = false) {
 }
 
 function setupSocketListeners() {
-    socket.on('room_joined', function(data) {
-        document.getElementById('join-section').style.display = 'none';
-        document.getElementById('room-section').style.display = 'block';
-        const roomTitleEle = document.createElement('span');
-        roomTitleEle.id = 'room-title';
-        
-        if (currentUserType === 'master') {
-            document.querySelector('.container').classList.add('player');
-            document.getElementById('master-view').style.display = 'block';
-            document.getElementById('masterInfo').prepend(roomTitleEle)
-        } else {
-            document.getElementById('slave-view').style.display = 'flex';
-            document.getElementById('basicInfo').prepend(roomTitleEle)
+    // 监听重连事件
+    socket.on('connect', function() {
+        // 如果已经在房间中，自动重新加入房间
+        if (currentRoom && currentUser && currentUserType) {
+            console.log('检测到重连，自动重新加入房间:', currentRoom);
+            socket.emit('join_room', {
+                room_id: currentRoom,
+                user_name: currentUser,
+                user_type: currentUserType
+            });
         }
-        roomTitleEle.innerHTML = `
-            <p>🏠 房间: ${currentRoom}<br /><span id="bilising-toggle-text">📱 单击展示点歌二维码</span></p>
-            <div id="bilising-qr-code" style="display: none; text-align: center;">
-                <canvas id="bilising-qr-image"></canvas>
-                <p>📱 扫码加入房间</p>
-            </div>
-        `;
-        roomTitleEle.addEventListener('click', function() {
-            const qrCodeSection = document.getElementById('bilising-qr-code');
-            const toggleText = document.getElementById('bilising-toggle-text');
-            if (qrCodeSection.style.display === 'none') {
-                qrCodeSection.style.display = 'block';
-                toggleText.textContent = '🙈 单击隐藏点歌二维码';
-                const maxWidth = 480 / (window.devicePixelRatio || 1);
-                const rect = qrCodeSection.getBoundingClientRect();
-                const width = Math.min(maxWidth, rect.width * 0.8);
-                QRCode.toCanvas(document.getElementById('bilising-qr-image'), `${location.origin}/?bilising-room-id=${currentRoom}`, {
-                    width: width,
-                    margin: 1,
-                    errorCorrectionLevel: 'H'
-                })
+    });
+
+    socket.on('room_joined', function(data) {
+        // 防止重复创建UI元素
+        if (document.getElementById('room-section').style.display !== 'block') {
+            document.getElementById('join-section').style.display = 'none';
+            document.getElementById('room-section').style.display = 'block';
+            const roomTitleEle = document.createElement('span');
+            roomTitleEle.id = 'room-title';
+            
+            if (currentUserType === 'master') {
+                document.querySelector('.container').classList.add('player');
+                document.getElementById('master-view').style.display = 'block';
+                document.getElementById('masterInfo').prepend(roomTitleEle)
             } else {
-                toggleText.textContent = '📱 单击展示点歌二维码';
-                qrCodeSection.style.display = 'none';
+                document.getElementById('slave-view').style.display = 'flex';
+                document.getElementById('basicInfo').prepend(roomTitleEle)
             }
-        });
+            roomTitleEle.innerHTML = `
+                <p>🏠 房间: ${currentRoom}<br /><span id="bilising-toggle-text">📱 单击展示点歌二维码</span></p>
+                <div id="bilising-qr-code" style="display: none; text-align: center;">
+                    <canvas id="bilising-qr-image"></canvas>
+                    <p>📱 扫码加入房间</p>
+                </div>
+            `;
+            roomTitleEle.addEventListener('click', function() {
+                const qrCodeSection = document.getElementById('bilising-qr-code');
+                const toggleText = document.getElementById('bilising-toggle-text');
+                if (qrCodeSection.style.display === 'none') {
+                    qrCodeSection.style.display = 'block';
+                    toggleText.textContent = '🙈 单击隐藏点歌二维码';
+                    const maxWidth = 480 / (window.devicePixelRatio || 1);
+                    const rect = qrCodeSection.getBoundingClientRect();
+                    const width = Math.min(maxWidth, rect.width * 0.8);
+                    QRCode.toCanvas(document.getElementById('bilising-qr-image'), `${location.origin}/?bilising-room-id=${currentRoom}`, {
+                        width: width,
+                        margin: 1,
+                        errorCorrectionLevel: 'H'
+                    })
+                } else {
+                    toggleText.textContent = '📱 单击展示点歌二维码';
+                    qrCodeSection.style.display = 'none';
+                }
+            });
+        }
 
         updateCurrentPlaying(data.current_playing);
         

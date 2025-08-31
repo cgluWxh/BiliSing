@@ -37,7 +37,6 @@ class RoomInfo:
         self.room_id = room_id
         self.play_list = []
         self.current_playing = None
-        self.users = []
         self.played_songs = []
         self.messages = []  # 存储聊天消息
         self.last_activity = time.time()  # 记录最后活跃时间
@@ -189,7 +188,6 @@ def on_join_room(data):
     
     # 加入房间
     join_room(room_id)
-    rooms[room_id].users.append(user)
     
     # 发送当前房间状态
     room_info = rooms[room_id]
