@@ -61,6 +61,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
 
 
 // bilising.user.js
+// bilising.user.js
 (function(){
     const headerContentController = {
         originalText: '',
@@ -317,11 +318,15 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         const floatingWindow = document.createElement('div');
         floatingWindow.id = 'bilising-float';
         floatingWindow.classList.add("bilising-collapsed");
+        floatingWindow.setAttribute('data-size', 'large'); // 添加尺寸属性
         floatingWindow.style.opacity = '0.8';
         floatingWindow.innerHTML = `
-    <div id="bilising-header">
+    <div id="bilising-header" class="header">
         <span id="bilising-header-content">🎤 BiliSing</span>
-        <button id="bilising-toggle">+</button>
+        <div class="header-controls">
+            <button id="bilising-size-control" title="切换大小">📐</button>
+            <button id="bilising-toggle">+</button>
+        </div>
     </div>
     <div id="bilising-content">
         <div id="bilising-roomInfo">
@@ -356,76 +361,134 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         // 添加样式
         const style = document.createElement('style');
         style.textContent = `
+    /* 基础响应式变量 */
+    :root {
+        --bilising-base-font-size: clamp(10px, 2.5vw, 14px);
+        --bilising-padding-sm: clamp(4px, 1vw, 8px);
+        --bilising-padding-md: clamp(8px, 2vw, 12px);
+        --bilising-padding-lg: clamp(12px, 3vw, 16px);
+        --bilising-border-radius: clamp(4px, 1vw, 8px);
+    }
+
     #bilising-float {
         position: fixed;
-        top: 20px;
-        left: 20px;
-        width: calc(100vw - 40px);
+        top: 0;
+        left: 0;
+        width: 100vw;
+        max-width: none;
+        min-width: none;
         background: rgba(0, 0, 0, 0.9);
         color: white;
-        border-radius: 8px;
+        border-radius: var(--bilising-border-radius);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        z-index: 10000;
+        z-index: 2147483647;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 12px;
+        font-size: var(--bilising-base-font-size);
         border: 1px solid rgba(255, 255, 255, 0.2);
-        z-index: 1145141919810;
-        font-size: 1.3em;
+    }
+
+    /* 尺寸控制 */
+    #bilising-float[data-size="small"] {
+        --bilising-base-font-size: clamp(8px, 2vw, 10px);
+        --bilising-padding-sm: clamp(2px, 0.5vw, 4px);
+        --bilising-padding-md: clamp(4px, 1vw, 6px);
+        --bilising-padding-lg: clamp(6px, 1.5vw, 8px);
+    }
+
+    #bilising-float[data-size="large"] {
+        --bilising-base-font-size: clamp(14px, 3.5vw, 18px);
+        --bilising-padding-sm: clamp(6px, 1.5vw, 12px);
+        --bilising-padding-md: clamp(12px, 3vw, 18px);
+        --bilising-padding-lg: clamp(18px, 4.5vw, 24px);
+    }
+
+    /* 移动端优化 */
+    @media (max-width: 768px) {
+        #bilising-float {
+            width: 100vw;
+        }
     }
 
     #bilising-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 8px 12px;
+        padding: var(--bilising-padding-sm) var(--bilising-padding-md);
         background: rgba(0, 174, 236, 0.8);
-        border-radius: 8px 8px 0 0;
+        border-radius: var(--bilising-border-radius) var(--bilising-border-radius) 0 0;
         cursor: move;
         font-weight: bold;
     }
 
-    #bilising-toggle {
+    .header-controls {
+        display: flex;
+        gap: var(--bilising-padding-sm);
+        align-items: center;
+    }
+
+    #bilising-toggle, #bilising-size-control {
         background: none;
         border: none;
         color: white;
-        font-size: 16px;
+        font-size: calc(var(--bilising-base-font-size) + 2px);
         cursor: pointer;
-        padding: 0;
-        width: 20px;
-        height: 20px;
+        padding: 2px;
+        width: calc(var(--bilising-base-font-size) + 8px);
+        height: calc(var(--bilising-base-font-size) + 8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 2px;
+        transition: background-color 0.2s;
+    }
+
+    #bilising-toggle:hover, #bilising-size-control:hover {
+        background: rgba(255, 255, 255, 0.2);
     }
 
     #bilising-content {
-        padding: 12px;
+        padding: var(--bilising-padding-md);
         display: flex;
+        flex-direction: column;
+        gap: var(--bilising-padding-md);
     }
 
-    #bilising-content > div {
-        flex: 1;
+    /* 响应式布局 */
+    @media (min-width: 600px) {
+        #bilising-content {
+            flex-direction: row;
+        }
+        
+        #bilising-content > div {
+            flex: 1;
+        }
     }
 
     #bilising-connection {
-        margin-bottom: 12px;
+        margin-bottom: var(--bilising-padding-md);
     }
 
     #bilising-connection input {
-        width: 120px;
-        padding: 4px 6px;
+        width: 100%;
+        max-width: 150px;
+        padding: var(--bilising-padding-sm) calc(var(--bilising-padding-sm) + 2px);
         border: 1px solid #ccc;
-        border-radius: 4px;
-        margin-right: 6px;
-        font-size: 12px;
+        border-radius: calc(var(--bilising-border-radius) / 2);
+        margin-right: calc(var(--bilising-padding-sm) + 2px);
+        margin-bottom: var(--bilising-padding-sm);
+        font-size: calc(var(--bilising-base-font-size) - 1px);
         color: black;
     }
 
     #bilising-connection button {
-        padding: 4px 12px;
+        padding: var(--bilising-padding-sm) var(--bilising-padding-md);
         background: #00aeec;
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: calc(var(--bilising-border-radius) / 2);
         cursor: pointer;
-        font-size: 12px;
+        font-size: calc(var(--bilising-base-font-size) - 1px);
+        min-width: 60px;
     }
 
     #bilising-connection button:hover {
@@ -434,76 +497,141 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
 
     #bilising-status {
         display: block;
-        margin-top: 6px;
-        font-size: 11px;
+        margin-top: calc(var(--bilising-padding-sm) + 2px);
+        font-size: calc(var(--bilising-base-font-size) - 2px);
         color: #ccc;
     }
 
     #bilising-controls div {
-        margin-bottom: 8px;
-        padding: 6px;
+        margin-bottom: var(--bilising-padding-sm);
+        padding: calc(var(--bilising-padding-sm) + 2px);
         background: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
+        border-radius: calc(var(--bilising-border-radius) / 2);
     }
 
     #bilising-controls strong {
         display: block;
-        margin-bottom: 4px;
+        margin-bottom: var(--bilising-padding-sm);
         color: #00aeec;
+        font-size: calc(var(--bilising-base-font-size) - 1px);
     }
 
     #bilising-current-song, #bilising-next-song {
-        font-size: 11px;
+        font-size: calc(var(--bilising-base-font-size) - 2px);
         line-height: 1.3;
         color: #fff;
+        word-break: break-word;
     }
 
-    #bilising-play-next,#bilising-batch-add-fav {
+    #bilising-play-next, #bilising-batch-add-fav {
         width: 100%;
-        padding: 8px;
+        padding: var(--bilising-padding-sm);
         background: #ff6b6b;
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: calc(var(--bilising-border-radius) / 2);
         cursor: pointer;
-        font-size: 12px;
+        font-size: calc(var(--bilising-base-font-size) - 1px);
         font-weight: bold;
+        margin-bottom: var(--bilising-padding-sm);
     }
 
-    #bilising-play-next:hover,#bilising-batch-add-fav:hover {
+    #bilising-play-next:hover, #bilising-batch-add-fav:hover {
         background: #ff5252;
     }
 
-    #bilising-play-next:disabled,#bilising-batch-add-fav:disabled {
+    #bilising-play-next:disabled, #bilising-batch-add-fav:disabled {
         background: #666;
         cursor: not-allowed;
     }
-
-    #bilising-batch-add-fav { margin-top: 8px; }
 
     div#bilising-roomQR-section {
         display: flex;
         justify-content: center;
         align-items: center;
+        flex-direction: column;
+        text-align: center;
     }
 
-    div#bilising-qr-code {
+    div#bilising-qr-code, div#bilising-qr-code2 {
         text-align: center;
+    }
+
+    div#bilising-qr-code canvas, div#bilising-qr-code2 canvas {
+        max-width: 100%;
+        height: auto;
     }
 
     .bilising-collapsed #bilising-content {
         display: none;
+    }
+
+    /* 全局二维码浮窗样式 */
+    #bilising-qr-code-float {
+        background: rgba(0, 0, 0, 0.8) !important;
+        border-radius: var(--bilising-border-radius) !important;
+        padding: var(--bilising-padding-md) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    #bilising-qr-code-float p {
+        font-size: calc(var(--bilising-base-font-size) + 2px) !important;
+        margin: var(--bilising-padding-sm) 0 !important;
+    }
+
+    #bilising-qr-close {
+        font-size: calc(var(--bilising-base-font-size) - 2px) !important;
+        padding: var(--bilising-padding-sm) !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: calc(var(--bilising-border-radius) / 2) !important;
+        margin-left: var(--bilising-padding-sm) !important;
+    }
+
+    #bilising-qr-close:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
     }
     `;
 
         document.head.appendChild(style);
         document.body.appendChild(floatingWindow);
 
+        const qrCodeGlobal = document.createElement('div');
+        qrCodeGlobal.id = 'bilising-qr-code-float';
+        qrCodeGlobal.innerHTML = `
+            <div id="bilising-qr-code2">
+                <canvas id="bilising-qr-image2" alt="房间二维码"></canvas>
+                <p style="color:white; font-size: 1.5em;">扫码点歌 <span style="color:white; cursor:pointer; font-size: .6em;" id="bilising-qr-close">关闭</span></p>
+            </div>
+        `;
+        qrCodeGlobal.style.display = 'none';
+        qrCodeGlobal.style.position = 'fixed';
+        const mainRect = floatingWindow.getBoundingClientRect();
+        qrCodeGlobal.style.top = mainRect.bottom + 20 + 'px';
+        qrCodeGlobal.style.left = '0';
+        qrCodeGlobal.style.zIndex = '2147483646';
+        qrCodeGlobal.style.background = "rgba(0, 0, 0, 0.8)";
+        qrCodeGlobal.style.opacity = '0.8';
+        
+        // 添加响应式定位更新函数
+        function updateQRPosition() {
+            const mainRect = floatingWindow.getBoundingClientRect();
+            qrCodeGlobal.style.top = mainRect.bottom + 10 + 'px';
+            qrCodeGlobal.style.left = mainRect.left + 'px';
+            qrCodeGlobal.style.maxWidth = mainRect.width + 'px';
+        }
+        
+        // 监听窗口大小变化和浮窗移动
+        window.addEventListener('resize', updateQRPosition);
+        floatingWindow.addEventListener('DOMSubtreeModified', updateQRPosition);
+        
+        document.body.appendChild(qrCodeGlobal);
+
         // 添加拖拽功能
         makeDraggable(floatingWindow);
+        makeDraggable(qrCodeGlobal);
 
         // 添加事件监听器
-        setupEventListeners();
+        setupEventListeners(floatingWindow, qrCodeGlobal);
 
         if (lastRoomId) {
             document.getElementById('bilising-room-id').value = lastRoomId;
@@ -512,12 +640,55 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
     }
 
     // 设置事件监听器
-    function setupEventListeners() {
+    function setupEventListeners(floatingWindow, qrCodeGlobal) {
+        document.getElementById('bilising-qr-close').addEventListener('click', function () {
+            qrCodeGlobal.style.display = 'none';
+        });
+        
+        // 尺寸控制按钮
+        document.getElementById('bilising-size-control').addEventListener('click', function () {
+            const floatWindow = floatingWindow;
+            const currentSize = floatWindow.getAttribute('data-size') || 'large';
+            let nextSize;
+            
+            switch (currentSize) {
+                case 'large':
+                    nextSize = 'normal';
+                    break;
+                case 'normal':
+                    nextSize = 'small';
+                    break;
+                case 'small':
+                    nextSize = 'large';
+                    break;
+                default:
+                    nextSize = 'small';
+            }
+            
+            floatWindow.setAttribute('data-size', nextSize);
+            
+            // 重新生成二维码以适应新尺寸
+            if (isConnected && currentRoom) {
+                setTimeout(() => {
+                    generateQRCodes();
+                }, 100); // 短暂延迟以等待尺寸变化
+            }
+            
+            // 保存尺寸设置
+            sessionStorage.setItem('bilising-size', nextSize);
+        });
+        
         // 折叠/展开
         document.getElementById('bilising-toggle').addEventListener('click', function () {
-            const floatWindow = document.getElementById('bilising-float');
+            const floatWindow = floatingWindow;
             floatWindow.classList.toggle('bilising-collapsed');
-            this.textContent = floatWindow.classList.contains('bilising-collapsed') ? '+' : '−';
+            if (floatWindow.classList.contains('bilising-collapsed')) {
+                this.textContent = '+';
+                qrCodeGlobal.style.display = 'block';
+            } else {
+                this.textContent = '−';
+                qrCodeGlobal.style.display = 'none';
+            }
         });
 
         // 连接按钮
@@ -562,6 +733,55 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                 document.getElementById('bilising-connect').click();
             }
         });
+
+        // 恢复上次保存的尺寸设置
+        const savedSize = sessionStorage.getItem('bilising-size');
+        if (savedSize && ['small', 'normal', 'large'].includes(savedSize)) {
+            document.getElementById('bilising-float').setAttribute('data-size', savedSize);
+        }
+    }
+
+    // 生成二维码的独立函数
+    function generateQRCodes() {
+        if (!currentRoom || !myURL) return;
+        
+        const floatWindow = document.getElementById('bilising-float');
+        const currentSize = floatWindow.getAttribute('data-size') || 'normal';
+        
+        // 根据当前尺寸和屏幕大小动态计算二维码尺寸
+        let sizeMultiplier = 1;
+        switch (currentSize) {
+            case 'small':
+                sizeMultiplier = 0.6;
+                break;
+            case 'large':
+                sizeMultiplier = 1.4;
+                break;
+            default:
+                sizeMultiplier = 1;
+        }
+        
+        const baseSize = 180;
+        const maxSize = Math.min(
+            (window.visualViewport ? window.visualViewport.width : window.innerWidth) * 0.3,
+            (window.visualViewport ? window.visualViewport.height : window.innerHeight) * 0.25
+        );
+        const qrSize = Math.max(80, Math.min(maxSize, baseSize * sizeMultiplier));
+        
+        const qrOptions = {
+            width: qrSize,
+            margin: 1,
+            errorCorrectionLevel: 'H',
+        };
+        
+        const qrUrl = `${myURL}/?bilising-room-id=${currentRoom}`;
+        
+        try {
+            QRCode.toCanvas(document.getElementById('bilising-qr-image'), qrUrl, qrOptions);
+            QRCode.toCanvas(document.getElementById('bilising-qr-image2'), qrUrl, qrOptions);
+        } catch (e) {
+            console.warn('生成二维码失败:', e);
+        }
     }
 
     // 连接到房间
@@ -607,6 +827,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         document.getElementById('bilising-controls').style.display = 'none';
         document.getElementById('bilising-noqr-text').style.display = 'block';
         document.getElementById('bilising-qr-code').style.display = 'none';
+        document.getElementById('bilising-qr-code-float').style.display = 'none';
         sessionStorage.removeItem('bilising-room-id');
     }
 
@@ -621,16 +842,10 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             updateStatus(`已连接到房间: ${currentRoom}`);
             document.getElementById('bilising-noqr-text').style.display = 'none';
             document.getElementById('bilising-qr-code').style.display = 'block';
+            document.getElementById('bilising-qr-code-float').style.display = 'block';
 
-            // use node-qrcode to generate QR code
-            const maxSize = 480 / (window.devicePixelRatio || 1);
-            const heightLimit = Math.min(maxSize, (window.visualViewport ? window.visualViewport.height : window.innerHeight) * .65);
-            const widthLimit = Math.min(maxSize, ((window.visualViewport ? window.visualViewport.width : window.innerWidth) - 40) * .4);
-            QRCode.toCanvas(document.getElementById('bilising-qr-image'), `${myURL}/?bilising-room-id=${currentRoom}`, {
-                width: Math.min(widthLimit, heightLimit),
-                margin: 1,
-                errorCorrectionLevel: 'H',
-            });
+            // 使用新的二维码生成函数
+            generateQRCodes();
 
             document.getElementById('bilising-connect').textContent = '断开';
             document.getElementById('bilising-controls').style.display = 'block';
@@ -648,8 +863,6 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         socket.on('playlist_updated', function (data) {
             updateNextSong(data.play_list);
             played_songs = data.played_songs || [];
-            if (!document.getElementById('bilising-float').classList.contains('bilising-collapsed'))
-                document.querySelector("#bilising-toggle").click();
             console.warn('播放列表已更新:', played_songs);
         });
 
@@ -698,7 +911,6 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         } else {
             currentSongElement.textContent = '暂无歌曲';
             headerContentController.setOriginalText('已播放完所有歌曲，正在重复播放最后一首，请扫码点歌');
-            document.querySelector("#bilising-toggle").click();
             return;
         }
         // MARK: append
@@ -755,7 +967,8 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
 
     // 使浮窗可拖拽
     function makeDraggable(element) {
-        const header = element.querySelector('#bilising-header');
+        let header = element.querySelector('.header');
+        if (!header) header = element;
         let isDragging = false;
         let currentX;
         let currentY;
