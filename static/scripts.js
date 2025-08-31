@@ -10,8 +10,13 @@ function joinRoom(defaultuser = false) {
     const userName = document.getElementById('user-name').value.trim() || (defaultuser ? '游客' : '');
     const userType = document.getElementById('user-type').value;
     
-    if (!roomId || !userName) {
-        showError('❌ 请填写房间ID和用户名');
+    if (!roomId) {
+        showError('❌ 请填写房间ID');
+        return;
+    }
+
+    if (!userName) {
+        showError('❌ 请填写用户名');
         return;
     }
 
