@@ -471,4 +471,4 @@ function requestPlaylistUpdate() {
     socket.emit('request_playlist_update', { room_id: currentRoom });
 }
 
-document.addEventListener('visibilitychange', requestPlaylistUpdate);
+// document.addEventListener('visibilitychange', requestPlaylistUpdate);
