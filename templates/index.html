@@ -11,6 +11,7 @@
 
 <body>
     <div class="container">
+        <div id="error-container"></div>
         <div id="join-section">
             <div class="header">
                 <h1>🎤 BiliSing</h1>
@@ -23,6 +24,7 @@
                 </select>
                 <input type="text" id="user-name" placeholder="用户名" required>
                 <button onclick="joinRoom()">加入房间</button>
+                <button onclick="joinRoom(true)">匿名加入</button>
             </div>
         </div>
 
@@ -93,8 +95,6 @@
                 </div>
             </div>
         </div>
-
-        <div id="error-container"></div>
     </div>
 
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>

@@ -181,7 +181,7 @@ def on_join_room(data):
         if user_type == 'master':
             rooms[room_id] = RoomInfo(room_id)
         else:
-            emit('error', {'message': '房间不存在，请等待主播创建房间'})
+            emit('error', {'message': '房间不存在，请等待主设备创建房间'})
             return
     
     # 更新房间活跃时间

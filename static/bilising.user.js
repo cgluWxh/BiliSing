@@ -179,7 +179,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                     try {
                         const aid = await bv2aid(bv);
                         await addToFav(aid, favId);
-                        await new Promise(r => setTimeout(r, 500)); // 防止触发风控
+                        await new Promise(r => setTimeout(r, 100)); // 防止触发风控
                     } catch (e) {
                         console.error(`处理 BV ${bv} 时出错:`, e);
                         headerContentController.setTemporaryText(`❌ 处理 BV ${bv} 失败: ${e.message}`, 60000);

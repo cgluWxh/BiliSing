@@ -4,10 +4,10 @@ let currentUser = null;
 let currentUserType = null;
 
 let triggeredJoin = false; // 用于防止重复加入房间
-function joinRoom() {
+function joinRoom(defaultuser = false) {
     if (triggeredJoin) return;
     const roomId = document.getElementById('room-id').value.trim();
-    const userName = document.getElementById('user-name').value.trim();
+    const userName = document.getElementById('user-name').value.trim() || (defaultuser ? '游客' : '');
     const userType = document.getElementById('user-type').value;
     
     if (!roomId || !userName) {
@@ -356,7 +356,7 @@ function playNextSong() {
         ele.innerHTML = "⏭️ 确认切歌";
         nextSongTimer = setTimeout(() => {
             ele.innerHTML = "⏭️ 播放下一首";
-        }, 3000);
+        }, 1500);
         return;
     } else if (ele.innerHTML == "⏭️ 确认切歌") {
         clearTimeout(nextSongTimer);
@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
             userNameInput.value = '播放设备';
             userNameInput.style.display = 'none';
         } else {
-            if (userNameInput.value == '播放设备') userNameInput.value = '';
+            if (['播放设备', '游客'].includes(userNameInput.value)) userNameInput.value = '';
             userNameInput.style.display = 'block';
         }
     });
@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (roomId) {
         roomIdInput.value = roomId;
         userTypeSelect.value = 'slave';
-        if (userNameInput.value == '播放设备') userNameInput.value = '';
+        if (['播放设备', '游客'].includes(userNameInput.value)) userNameInput.value = '';
     }
     userTypeSelect.dispatchEvent(new Event('change'));
 });
