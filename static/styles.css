@@ -551,3 +551,7 @@ a:hover {
     color: #8bd6f6;
     text-decoration: underline;
 }
+
+#played-songs-container .song-item {
+    opacity: 0.4 !important;
+}

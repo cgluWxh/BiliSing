@@ -77,7 +77,7 @@ function setupSocketListeners() {
             document.getElementById('basicInfo').prepend(roomTitleEle)
         }
         roomTitleEle.innerHTML = `
-            <p>🏠 房间: ${currentRoom} <span id="bilising-toggle-text">📱 单击展示点歌二维码</span></p>
+            <p>🏠 房间: ${currentRoom}<br /><span id="bilising-toggle-text">📱 单击展示点歌二维码</span></p>
             <div id="bilising-qr-code" style="display: none; text-align: center;">
                 <canvas id="bilising-qr-image"></canvas>
                 <p>📱 扫码加入房间</p>
@@ -192,7 +192,7 @@ function updatePlaylist(playlist) {
         html += `
             <div class="song-item">
                 <div class="song-info">
-                    <div class="song-title">${song.title}</div>
+                    <div class="song-title">${index + 1}. ${song.title}</div>
                     <div class="song-producer">UP主: ${song.producer}</div>
                 </div>
                 ${currentUserType === 'slave' ? `

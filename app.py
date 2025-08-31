@@ -281,6 +281,14 @@ def on_request_playlist_update(data):
 
     # 更新房间活跃时间
     update_room_activity(room_id)
+    
+    emit('now_playing', {
+        'current_playing': {
+            'title': rooms[room_id].current_playing.title,
+            'producer': rooms[room_id].current_playing.producer,
+            'url': rooms[room_id].current_playing.url
+        }
+    })
 
     emit('playlist_updated', {
         'play_list': [{
