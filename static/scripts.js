@@ -462,6 +462,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (roomId) {
         roomIdInput.value = roomId;
         userTypeSelect.value = 'slave';
+        roomIdInput.style.display = 'none';
+        userTypeSelect.style.display = 'none';
         if (['播放设备', '游客'].includes(userNameInput.value)) userNameInput.value = '';
     }
     userTypeSelect.dispatchEvent(new Event('change'));
