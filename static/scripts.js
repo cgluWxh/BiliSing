@@ -315,6 +315,7 @@ function addSong() {
         return;
     }
 
+    addSongBtn.innerHTML = "✅";
     addSongBtn.disabled = true; // 禁用按钮，防止重复提交
     
     socket.emit('add_song', {
@@ -324,7 +325,10 @@ function addSong() {
     });
 
     document.getElementById('bilibili-url').value = '';
-    addSongBtn.disabled = false; // 恢复按钮状态
+    setTimeout(() => {
+        addSongBtn.innerHTML = "➕";
+        addSongBtn.disabled = false;
+    }, 300);
 }
 
 function removeSong(index) {
@@ -345,11 +349,29 @@ function moveSong(fromIndex, toIndex) {
     });
 }
 
+let nextSongTimer = null;
 function playNextSong() {
-    socket.emit('next_song', {
-        room_id: currentRoom,
-        user_name: currentUser
-    });
+    const ele = document.querySelector('.next-song-btn');
+    if (ele.innerHTML == "⏭️ 播放下一首") {
+        ele.innerHTML = "⏭️ 确认切歌";
+        nextSongTimer = setTimeout(() => {
+            ele.innerHTML = "⏭️ 播放下一首";
+        }, 3000);
+        return;
+    } else if (ele.innerHTML == "⏭️ 确认切歌") {
+        clearTimeout(nextSongTimer);
+        socket.emit('next_song', {
+            room_id: currentRoom,
+            user_name: currentUser
+        });
+        ele.innerHTML = "✅ 已提交";
+        ele.setAttribute("disabled", "true");
+        setTimeout(() => {
+            ele.innerHTML = "⏭️ 播放下一首";
+            ele.removeAttribute("disabled");
+        }, 300);
+    }
+    
 }
 
 function replaySong(index) {
@@ -429,6 +451,8 @@ document.addEventListener('DOMContentLoaded', function() {
     userTypeSelect.dispatchEvent(new Event('change'));
 });
 
-document.addEventListener('visibilitychange', function() {
+function requestPlaylistUpdate() {
     socket.emit('request_playlist_update', { room_id: currentRoom });
-});
+}
+
+document.addEventListener('visibilitychange', requestPlaylistUpdate);
