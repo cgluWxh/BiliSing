@@ -49,7 +49,8 @@ function joinRoom(defaultuser = false) {
     }
     
     // 初始化Socket.IO连接
-    socket = io();
+    // TODO: Modify Me
+    socket = io('https://sing.bilibiili.com/');
     
     // 设置事件监听器
     setupSocketListeners();
@@ -95,6 +96,9 @@ function setupSocketListeners() {
             } else {
                 document.getElementById('slave-view').style.display = 'flex';
                 document.getElementById('basicInfo').prepend(roomTitleEle)
+                
+                // 创建移动端底部 tab 切换器
+                createMobileTabSwitcher();
             }
             roomTitleEle.innerHTML = `
                 <p>🏠 房间: ${currentRoom}<br /><span id="bilising-toggle-text">📱 单击展示点歌二维码</span></p>
@@ -215,6 +219,7 @@ function updatePlaylist(playlist) {
                 <div class="song-info">
                     <div class="song-title">${index + 1}. ${song.title}</div>
                     <div class="song-producer">UP主: ${song.producer}</div>
+
                 </div>
                 ${currentUserType === 'slave' ? `
                 <div class="song-actions">
@@ -476,6 +481,69 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function requestPlaylistUpdate() {
     socket.emit('request_playlist_update', { room_id: currentRoom });
+}
+
+// 创建移动端底部 tab 切换器
+function createMobileTabSwitcher() {
+    // 检查是否已经存在 tab 切换器，避免重复创建
+    if (document.getElementById('mobile-tab-switcher')) {
+        return;
+    }
+    
+    const tabSwitcher = document.createElement('div');
+    tabSwitcher.id = 'mobile-tab-switcher';
+    tabSwitcher.className = 'mobile-tab-switcher';
+    
+    tabSwitcher.innerHTML = `
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchMobileTab('basicInfo')">
+                <div class="tab-label">点歌</div>
+            </button>
+            <button class="tab-button" onclick="switchMobileTab('playlist')">
+                <div class="tab-label">已播放</div>
+            </button>
+            <button class="tab-button" onclick="switchMobileTab('chat')">
+                <div class="tab-label">消息</div>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(tabSwitcher);
+    
+    // 初始化显示第一个 tab
+    switchMobileTab('basicInfo');
+}
+
+// 切换移动端 tab
+function switchMobileTab(tabName) {
+    // 移除所有 tab 按钮的 active 状态
+    const tabButtons = document.querySelectorAll('.mobile-tab-switcher .tab-button');
+    tabButtons.forEach(button => button.classList.remove('active'));
+    
+    // 隐藏所有内容区域
+    const basicInfo = document.getElementById('basicInfo');
+    const playlistSection = document.querySelector('#extraInfo .playlist');
+    const chatSection = document.querySelector('#extraInfo .chat-section');
+    
+    if (basicInfo) basicInfo.classList.remove('active');
+    if (playlistSection) playlistSection.classList.remove('active');
+    if (chatSection) chatSection.classList.remove('active');
+    
+    // 根据选中的 tab 显示对应内容并激活按钮
+    switch(tabName) {
+        case 'basicInfo':
+            if (basicInfo) basicInfo.classList.add('active');
+            tabButtons[0].classList.add('active');
+            break;
+        case 'playlist':
+            if (playlistSection) playlistSection.classList.add('active');
+            tabButtons[1].classList.add('active');
+            break;
+        case 'chat':
+            if (chatSection) chatSection.classList.add('active');
+            tabButtons[2].classList.add('active');
+            break;
+    }
 }
 
 // document.addEventListener('visibilitychange', requestPlaylistUpdate);

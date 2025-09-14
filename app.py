@@ -86,7 +86,8 @@ def extract_bilibili_info(url):
                 return {
                     'title': video_data['title'],
                     'producer': video_data['owner']['name'],
-                    'url': f'https://www.bilibili.com/video/{bv_id}'
+                    'duration': video_data['duration'],
+                    'url': f'https://www.bilibili.com/video/{bv_id}',
                 }
         # 如果API调用失败或数据不完整，返回默认信息
         return {
@@ -235,6 +236,7 @@ def on_add_song(data):
     
     # 提取哔哩哔哩视频信息
     video_info = extract_bilibili_info(bilibili_url)
+    video_info['by'] = user_name
     if not video_info:
         emit('error', {'message': '无效的哔哩哔哩链接'})
         return

@@ -435,9 +435,89 @@ body {
     box-shadow: 0 4px 12px rgba(139, 69, 69, 0.3);
 }
 
+/* 移动端底部 Tab 切换器样式 */
+.mobile-tab-switcher {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, rgba(45, 50, 55, 0.95) 0%, rgba(35, 40, 45, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 0;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+}
+
+.mobile-tab-switcher .tab-buttons {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.mobile-tab-switcher .tab-button {
+    flex: 1;
+    padding: 12px 8px;
+    background: transparent;
+    border: none;
+    color: #a0a0a0;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin: 0 4px;
+}
+
+.mobile-tab-switcher .tab-button.active {
+    color: #7bc6e6;
+    background: rgba(123, 198, 230, 0.1);
+    transform: translateY(-2px);
+}
+
+.mobile-tab-switcher .tab-button:hover {
+    color: #c0c0c0;
+    background: rgba(255,255,255,0.05);
+}
+
+.mobile-tab-switcher .tab-button .tab-icon {
+    font-size: 18px;
+    margin-bottom: 2px;
+}
+
+.mobile-tab-switcher .tab-button .tab-label {
+    font-size: 10px;
+    font-weight: 500;
+}
+
 @media screen and (max-width: 768px) {
     .slave-view {
         flex-direction: column;
+        padding-bottom: 80px; /* 为底部 tab 留出空间 */
+    }
+    
+    .mobile-tab-switcher {
+        display: block;
+    }
+    
+    /* 隐藏除了当前选中的 tab 内容外的其他内容 */
+    .slave-view #basicInfo,
+    .slave-view #extraInfo .playlist,
+    .slave-view #extraInfo .chat-section {
+        display: none;
+    }
+    
+    /* 显示当前选中的 tab 内容 */
+    .slave-view #basicInfo.active,
+    .slave-view #extraInfo .playlist.active,
+    .slave-view #extraInfo .chat-section.active {
+        display: block;
     }
     
     .add-song-input-row {
@@ -451,6 +531,10 @@ body {
     .song-actions button {
         padding: 6px 10px;
         font-size: 14px;
+    }
+
+    .song-info {
+        flex: unset;
     }
 }
 
