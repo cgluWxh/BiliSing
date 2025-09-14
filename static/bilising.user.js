@@ -303,11 +303,6 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             const video = document.querySelector("#bilibili-player video");
             video.setAttribute('playsinline', '');
             video.setAttribute('webkit-playsinline', '');
-            if (!window.player) {
-                // 此处没有正确配置为 Manifest V3，无法访问全局对象，重新注入自己然后退出
-                injectToMainWorld('content.js');
-                return;
-            }
             video.onended = () => {
                 document.getElementById('bilising-play-next').click();
             };
