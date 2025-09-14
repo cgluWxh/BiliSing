@@ -298,7 +298,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             myURL = "https://" + myURL;
         }
 
-        if (location.href.includes('/video/')) {
+        if (location.href.includes('/video/') || location.href.includes('/festival/')) {
             await untilElement("#bilibili-player video");
             const video = document.querySelector("#bilibili-player video");
             video.setAttribute('playsinline', '');
@@ -939,7 +939,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
 
     // 导航到视频
     async function navigateToVideoIfNeeded(url) {
-        if (location.href.includes("/video/") && window.player && window.player.reload) {
+        if ((location.href.includes('/video/') || location.href.includes('/festival/')) && window.player && window.player.reload) {
             // 以下为内部API，可能失效
             const manifest = window.player.getManifest();
             const pRegex = /[?&]p=(\d+)/;
