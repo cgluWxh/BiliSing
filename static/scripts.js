@@ -2,6 +2,7 @@ let socket;
 let currentRoom = null;
 let currentUser = null;
 let currentUserType = null;
+let currentPlaying = null;
 
 let triggeredJoin = false; // 用于防止重复加入房间
 function joinRoom(defaultuser = false) {
@@ -49,8 +50,7 @@ function joinRoom(defaultuser = false) {
     }
     
     // 初始化Socket.IO连接
-    // TODO: Modify Me
-    socket = io('https://sing.bilibiili.com/');
+    socket = io();
     
     // 设置事件监听器
     setupSocketListeners();
@@ -162,12 +162,13 @@ function setupSocketListeners() {
 
 function updateCurrentPlaying(song) {
     // 如果是slave则只显示文字
+    currentPlaying = song;
     if (currentUserType === 'slave') {
         const curSongContent = document.getElementById('current-song-content');
         if (song && song.title) {
             curSongContent.innerHTML = `
                 <div class="song-title">${song.title}</div>
-                <div class="song-producer">UP主: ${song.producer}</div>
+                <div class="song-producer">UP主: ${song.producer} 时长: ${formatDuration(song.duration)} 点播者: ${song.by}</div>
             `;
         } else {
             curSongContent.innerHTML = '暂无正在播放的歌曲';
@@ -189,6 +190,18 @@ function updateCurrentPlaying(song) {
     } else {
         videoPlayer.innerHTML = '<div class="no-video">暂无正在播放的歌曲</div>';
     }
+}
+
+function formatDuration(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    if (hours > 0) {
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 function updatePlaylist(playlist) {
@@ -213,13 +226,14 @@ function updatePlaylist(playlist) {
     
     // 更新播放列表
     let html = '';
+    let totalDuration = 0;
     playlist.forEach((song, index) => {
+        totalDuration += song.duration || 0;
         html += `
             <div class="song-item">
                 <div class="song-info">
                     <div class="song-title">${index + 1}. ${song.title}</div>
-                    <div class="song-producer">UP主: ${song.producer}</div>
-
+                    <div class="song-producer">UP主: ${song.producer} 时长: ${formatDuration(song.duration)} 点播者: ${song.by}</div>
                 </div>
                 ${currentUserType === 'slave' ? `
                 <div class="song-actions">
@@ -232,6 +246,11 @@ function updatePlaylist(playlist) {
             </div>
         `;
     });
+    totalDuration += currentPlaying.duration || 0;
+    const estimatedDurationEle = document.getElementById('estimated-duration');
+    if (estimatedDurationEle) {
+        estimatedDurationEle.textContent = `(总时长 ${formatDuration(totalDuration)})`;
+    }
     container.innerHTML = html;
 }
 
@@ -249,7 +268,7 @@ function updatePlayedSongs(playedSongs) {
             <div class="song-item">
                 <div class="song-info">
                     <div class="song-title">${song.title}</div>
-                    <div class="song-producer">UP主: ${song.producer}</div>
+                    <div class="song-producer">UP主: ${song.producer} 时长: ${formatDuration(song.duration)}</div>
                 </div>
                 ${currentUserType === 'slave' ? `
                 <div class="song-actions">

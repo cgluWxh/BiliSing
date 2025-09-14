@@ -5,6 +5,7 @@ import re
 import time
 import requests
 from urllib.parse import urlparse, parse_qs, urlunparse
+import json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bilising_secret_key'
@@ -20,10 +21,12 @@ class User:
         self.type = user_type  # 'master' or 'slave'
 
 class Song:
-    def __init__(self, title, producer, url):
+    def __init__(self, title, producer, url, duration=0, by='游客'):
         self.title = title
         self.producer = producer
         self.url = url
+        self.duration = duration  # 以秒为单位
+        self.by = by  # 点播者
 
 class Message:
     def __init__(self, user_name, content, message_type='user', timestamp=None):
@@ -93,6 +96,7 @@ def extract_bilibili_info(url):
         return {
             'title': f'视频标题 {bv_id}',
             'producer': '未知UP主',
+            'duration': 0,
             'url': url
         }
     return None
@@ -198,17 +202,22 @@ def on_join_room(data):
         'current_playing': {
             'title': room_info.current_playing.title if room_info.current_playing else None,
             'producer': room_info.current_playing.producer if room_info.current_playing else None,
-            'url': room_info.current_playing.url if room_info.current_playing else None
+            'url': room_info.current_playing.url if room_info.current_playing else None,
+            'duration': room_info.current_playing.duration if room_info.current_playing else None,
+            'by': room_info.current_playing.by if room_info.current_playing else None,
         } if room_info.current_playing else None,
         'play_list': [{
             'title': song.title,
             'producer': song.producer,
-            'url': song.url
+            'url': song.url,
+            'duration': song.duration,
+            'by': song.by,
         } for song in room_info.play_list],
         'played_songs': [{
             'title': song.title,
             'producer': song.producer,
-            'url': song.url
+            'url': song.url,
+            'duration': song.duration,
         } for song in room_info.played_songs]
     }
     if user_type == 'slave':
@@ -236,13 +245,13 @@ def on_add_song(data):
     
     # 提取哔哩哔哩视频信息
     video_info = extract_bilibili_info(bilibili_url)
-    video_info['by'] = user_name
     if not video_info:
         emit('error', {'message': '无效的哔哩哔哩链接'})
         return
+    video_info['by'] = user_name  # 记录点播者
     
     # 创建歌曲对象并添加到播放列表
-    song = Song(video_info['title'], video_info['producer'], bilibili_url)
+    song = Song(video_info['title'], video_info['producer'], bilibili_url, video_info['duration'], video_info['by'])
     rooms[room_id].play_list.append(song)
     
     # 添加系统消息
@@ -253,12 +262,15 @@ def on_add_song(data):
         'play_list': [{
             'title': song.title,
             'producer': song.producer,
-            'url': song.url
+            'url': song.url,
+            'duration': song.duration,
+            'by': song.by
         } for song in rooms[room_id].play_list],
         'played_songs': [{
             'title': song.title,
             'producer': song.producer,
-            'url': song.url
+            'url': song.url,
+            'duration': song.duration,
         } for song in rooms[room_id].played_songs]
     }, room=room_id)
     
@@ -286,7 +298,9 @@ def on_request_playlist_update(data):
         'current_playing': {
             'title': rooms[room_id].current_playing.title,
             'producer': rooms[room_id].current_playing.producer,
-            'url': rooms[room_id].current_playing.url
+            'url': rooms[room_id].current_playing.url,
+            'duration': rooms[room_id].current_playing.duration,
+            'by': rooms[room_id].current_playing.by
         }
     })
 
@@ -294,12 +308,15 @@ def on_request_playlist_update(data):
         'play_list': [{
             'title': song.title,
             'producer': song.producer,
-            'url': song.url
+            'url': song.url,
+            'duration': song.duration,
+            'by': song.by
         } for song in rooms[room_id].play_list],
         'played_songs': [{
             'title': song.title,
             'producer': song.producer,
-            'url': song.url
+            'url': song.url,
+            'duration': song.duration,
         } for song in rooms[room_id].played_songs]
     })
     
@@ -330,12 +347,15 @@ def on_remove_song(data):
             'play_list': [{
                 'title': song.title,
                 'producer': song.producer,
-                'url': song.url
+                'url': song.url,
+                'duration': song.duration,
+                'by': song.by
             } for song in room.play_list],
             'played_songs': [{
                 'title': song.title,
                 'producer': song.producer,
-                'url': song.url
+                'url': song.url,
+                'duration': song.duration,
             } for song in room.played_songs]
         }, room=room_id)
         
@@ -367,12 +387,15 @@ def on_reorder_songs(data):
             'play_list': [{
                 'title': song.title,
                 'producer': song.producer,
-                'url': song.url
+                'url': song.url,
+                'duration': song.duration,
+                'by': song.by
             } for song in room.play_list],
             'played_songs': [{
                 'title': song.title,
                 'producer': song.producer,
-                'url': song.url
+                'url': song.url,
+                'duration': song.duration,
             } for song in room.played_songs]
         }, room=room_id)
 
@@ -411,7 +434,9 @@ def on_next_song(data):
             'current_playing': {
                 'title': room.current_playing.title,
                 'producer': room.current_playing.producer,
-                'url': room.current_playing.url
+                'url': room.current_playing.url,
+                'duration': room.current_playing.duration,
+                'by': room.current_playing.by
             }
         }, room=room_id)
         
@@ -419,12 +444,15 @@ def on_next_song(data):
             'play_list': [{
                 'title': song.title,
                 'producer': song.producer,
-                'url': song.url
+                'url': song.url,
+                'duration': song.duration,
+                'by': song.by
             } for song in room.play_list],
             'played_songs': [{
                 'title': song.title,
                 'producer': song.producer,
-                'url': song.url
+                'url': song.url,
+                'duration': song.duration,
             } for song in room.played_songs]
         }, room=room_id)
         
@@ -451,7 +479,13 @@ def on_replay_song(data):
     room = rooms[room_id]
     if 0 <= song_index < len(room.played_songs):
         # 从已播放列表中获取歌曲并添加到播放列表
-        song_to_replay = room.played_songs[song_index]
+        song_to_replay = Song(
+            room.played_songs[song_index].title,
+            room.played_songs[song_index].producer,
+            room.played_songs[song_index].url,
+            room.played_songs[song_index].duration,
+            user_name
+        )
         room.play_list.append(song_to_replay)
         
         # 添加系统消息
@@ -462,12 +496,15 @@ def on_replay_song(data):
             'play_list': [{
                 'title': song.title,
                 'producer': song.producer,
-                'url': song.url
+                'url': song.url,
+                'duration': song.duration,
+                'by': song.by
             } for song in room.play_list],
             'played_songs': [{
                 'title': song.title,
                 'producer': song.producer,
-                'url': song.url
+                'url': song.url,
+                'duration': song.duration,
             } for song in room.played_songs]
         }, room=room_id)
         
