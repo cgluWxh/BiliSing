@@ -21,8 +21,6 @@ function joinRoom(defaultuser = false) {
         return;
     }
 
-    triggeredJoin = true; // 设置为true，防止重复加入
-
     localStorage.setItem('lastRoomInfo', JSON.stringify({
         roomId: roomId,
         userName: userName,
@@ -48,6 +46,8 @@ function joinRoom(defaultuser = false) {
         }
         return;
     }
+
+    triggeredJoin = true; // 设置为true，防止重复加入
     
     // 初始化Socket.IO连接
     socket = io();
