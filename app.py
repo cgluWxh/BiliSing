@@ -53,27 +53,17 @@ def convert_b23(b23_url):
     except requests.RequestException as e:
         raise RuntimeError(f"Request failed: {e}")
 
-    if resp.status_code not in [301, 302, 200]:
-        try:
-            data = resp.json()
-            message = data.get("message", "unknown error")
-        except ValueError:
-            message = "unknown error (not JSON response)"
-        raise ValueError(f"Invalid b23 link (status code: {resp.status_code}, message: {message})")
-
-    if resp.status_code == 200:
-        location = b23_url  # 如果状态码是200，直接返回原始链接
-    else:
+    if resp.status_code in [301, 302]:
         location = resp.headers.get("Location")
         if not location:
             raise ValueError("No redirect location found in response.")
+    else:
+        location = b23_url
 
     return location
 
 def extract_bilibili_info(url):
     """从哔哩哔哩链接中提取视频信息"""
-    # 这里是一个简化的实现，实际项目中可能需要调用哔哩哔哩API
-    # 目前返回一个模拟的信息
     bv_match = re.search(r'BV[\w]+', url) 
     if bv_match:
         bv_id = bv_match.group()
