@@ -65,6 +65,7 @@ def convert_b23(b23_url):
 def extract_bilibili_info(url):
     """从哔哩哔哩链接中提取视频信息"""
     bv_match = re.search(r'BV[\w]+', url) 
+    p_match = re.search(r'[?&]p=(\d+)', url)
     if bv_match:
         bv_id = bv_match.group()
         apiurl = f'https://api.bilibili.com/x/web-interface/view?bvid={bv_id}'
@@ -76,10 +77,20 @@ def extract_bilibili_info(url):
             data = resp.json()
             if data['code'] == 0:
                 video_data = data['data']
+                duration = video_data['duration']
+                # 如果指定了分P，尝试获取对应分P的时长
+                try:
+                    if p_match:
+                        p_index = int(p_match.group(1)) - 1
+                        if 0 <= p_index < len(video_data['pages']):
+                            duration = video_data['pages'][p_index]['duration']
+                except:
+                    if not duration:
+                        duration = 0
                 return {
                     'title': video_data['title'],
                     'producer': video_data['owner']['name'],
-                    'duration': video_data['duration'],
+                    'duration': duration,
                     'url': f'https://www.bilibili.com/video/{bv_id}',
                 }
         # 如果API调用失败或数据不完整，返回默认信息
