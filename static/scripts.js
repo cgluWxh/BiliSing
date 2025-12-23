@@ -55,13 +55,6 @@ function joinRoom(defaultuser = false) {
     // 设置事件监听器
     setupSocketListeners();
     
-    // 加入房间
-    socket.emit('join_room', {
-        room_id: roomId,
-        user_name: userName,
-        user_type: userType
-    });
-    
     currentRoom = roomId;
     currentUser = userName;
     currentUserType = userType;

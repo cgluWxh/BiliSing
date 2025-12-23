@@ -4,6 +4,7 @@
 - Feat: 增加了朗读功能，在用户发送消息时自动朗读消息内容，提升互动体验。(TTS API 来自 Microsoft Edge TTS (由 https://github.com/wangwangit/tts/blob/master/index.js 重写为 Python) )
 - Fix: 修复了移动端消息浏览时无法自动滚动到底部的问题，确保用户能看到最新消息。
 - Fix: 修复了无法正确获取多P视频中第1P时长的问题，确保播放列表显示准确的总时长。
+- Fix: 修复了进入房间时会重复发送加入房间请求的问题。
 
 ---
 

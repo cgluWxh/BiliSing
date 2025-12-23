@@ -314,20 +314,20 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                 
                 this.audioElement.volume = 1;
 
-                player.setVolume(.3); // 降低视频音量
+                player && player.setVolume(.3); // 降低视频音量
                 
                 // 播放
                 await this.audioElement.play();
                 
                 // 清理URL对象（在播放结束后）
                 this.audioElement.addEventListener('ended', () => {
-                    player.setVolume(1); // 恢复视频音量
+                    player && player.setVolume(1); // 恢复视频音量
                     URL.revokeObjectURL(audioUrl);
                 }, { once: true });
 
             } catch (error) {
                 console.warn('TTS朗读失败:', error);
-                player.setVolume(1); // 恢复视频音量
+                player && player.setVolume(1); // 恢复视频音量
                 this.isPlaying = false;
                 this.playNext();
             }
