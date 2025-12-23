@@ -377,7 +377,7 @@ def on_add_song(data):
     
     if not rooms[room_id].current_playing:
         # 如果当前没有播放歌曲，立即播放新添加的歌曲
-        on_next_song({'room_id': room_id, 'user_name': user_name})
+        on_next_song({'room_id': room_id, 'user_name': "播放设备"})
         
         
 @socketio.on('request_playlist_update')
