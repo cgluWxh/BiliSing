@@ -201,6 +201,8 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
     let played_songs = [];
     let play_list = [];
     let nextSong = null;
+    let audioContext = null;
+    let gainNode = null;
 
     // TTS朗读队列管理
     const ttsQueue = {
@@ -314,20 +316,43 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                 
                 this.audioElement.volume = 1;
 
-                window.player && window.player.setVolume(.3); // 降低视频音量
-                
+
+                const transitionDuration = 1; // 音量变化持续时间（秒）
+                if (gainNode) {
+                    // 停止所有之前的变化
+                    gainNode.gain.cancelScheduledValues(audioContext.currentTime);
+                    // 锚定起点
+                    gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime);
+                    // 指数级淡入 (比 linear 舒服得多)
+                    gainNode.gain.exponentialRampToValueAtTime(.2, audioContext.currentTime + transitionDuration);
+                }
+
                 // 播放
                 await this.audioElement.play();
                 
                 // 清理URL对象（在播放结束后）
                 this.audioElement.addEventListener('ended', () => {
-                    window.player && window.player.setVolume(1); // 恢复视频音量
+                    if (gainNode) {
+                        // 停止所有之前的变化
+                        gainNode.gain.cancelScheduledValues(audioContext.currentTime);
+                        // 锚定起点
+                        gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime);
+                        // 指数级淡入 (比 linear 舒服得多)
+                        gainNode.gain.exponentialRampToValueAtTime(1, audioContext.currentTime + transitionDuration);
+                    }
                     URL.revokeObjectURL(audioUrl);
                 }, { once: true });
 
             } catch (error) {
                 console.warn('TTS朗读失败:', error);
-                window.player && window.player.setVolume(1); // 恢复视频音量
+                if (gainNode) {
+                    // 停止所有之前的变化
+                    gainNode.gain.cancelScheduledValues(audioContext.currentTime);
+                    // 锚定起点
+                    gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime);
+                    // 指数级淡入 (比 linear 舒服得多)
+                    gainNode.gain.exponentialRampToValueAtTime(1, audioContext.currentTime + transitionDuration);
+                }
                 this.isPlaying = false;
                 this.playNext();
             }
@@ -354,21 +379,6 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
         try { await window.player.setMuted(false); } catch (e) { console.warn('设置静音失败:', e); }
         try { await window.player.play(); } catch (e) { console.warn('播放失败:', e); }
         try { if (!document.querySelector("#bilibili-player").classList.contains("mode-webscreen")) document.querySelector(".bpx-player-ctrl-btn.bpx-player-ctrl-web").click(); } catch (e) { console.warn('全屏失败:', e); }
-        
-        // 恢复朗读队列
-        try {
-            if (ttsQueue.enabled && !ttsQueue.isPlaying && ttsQueue.queue.length === 0) {
-                ttsQueue.loadQueue();
-                if (ttsQueue.queue.length > 0) {
-                    console.log('检测到未完成的朗读队列，继续播放');
-                    setTimeout(() => {
-                        ttsQueue.playNext();
-                    }, 1000); // 延迟1秒启动，确保视频已开始播放
-                }
-            }
-        } catch (e) {
-            console.warn('恢复朗读队列失败:', e);
-        }
     }
 
     // 创建浮窗HTML
@@ -464,6 +474,35 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             };
             await untilElement(".bpx-player-ctrl-btn.bpx-player-ctrl-web");
             await playFromStart();
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioContext.state === 'suspended') {
+                        await audioContext.resume();
+                    }
+                    const video = document.querySelector("#bilibili-player video");
+                    const source = audioContext.createMediaElementSource(video);
+                    gainNode = audioContext.createGain();
+                    gainNode.gain.value = 1.0;
+                    source.connect(gainNode).connect(audioContext.destination);
+                } catch (e) {
+                    console.warn('初始化 AudioContext 失败:', e);
+                }
+            }
+            // 恢复朗读队列
+            try {
+                if (ttsQueue.enabled && !ttsQueue.isPlaying && ttsQueue.queue.length === 0) {
+                    ttsQueue.loadQueue();
+                    if (ttsQueue.queue.length > 0) {
+                        console.log('检测到未完成的朗读队列，继续播放');
+                        setTimeout(() => {
+                            ttsQueue.playNext();
+                        }, 1000); // 延迟1秒启动，确保视频已开始播放
+                    }
+                }
+            } catch (e) {
+                console.warn('恢复朗读队列失败:', e);
+            }
         }
 
         const floatingWindow = document.createElement('div');
