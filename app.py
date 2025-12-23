@@ -1,11 +1,12 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, Response, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import uuid
 import re
 import time
 import requests
 from urllib.parse import urlparse, parse_qs, urlunparse
-import json
+from concurrent.futures import ThreadPoolExecutor
+import tts_server
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bilising_secret_key'
@@ -84,6 +85,9 @@ def extract_bilibili_info(url):
                         p_index = int(p_match.group(1)) - 1
                         if 0 <= p_index < len(video_data['pages']):
                             duration = video_data['pages'][p_index]['duration']
+                    else:
+                        if 'pages' in video_data and len(video_data['pages']) > 0:
+                            duration = video_data['pages'][0]['duration']
                 except:
                     if not duration:
                         duration = 0
@@ -162,6 +166,98 @@ def clear_expired_room(room_id):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/v1/audio/speech', methods=['POST', 'OPTIONS'])
+def audio_speech():
+    if request.method == 'OPTIONS':
+        return Response(status=204, headers=tts_server.make_cors_headers())
+
+    try:
+        text = ""
+        voice = "zh-CN-XiaoxiaoNeural"
+        speed = '1.0'
+        volume = '0'
+        pitch = '0'
+        style = "general"
+
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            # Handle file upload
+            file = request.files.get('file')
+            if not file:
+                return jsonify({"error": {"message": "No file"}}), 400
+            
+            text = file.read().decode('utf-8')
+            voice = request.form.get('voice', voice)
+            speed = request.form.get('speed', speed)
+            volume = request.form.get('volume', volume)
+            pitch = request.form.get('pitch', pitch)
+            style = request.form.get('style', style)
+        else:
+            # Handle JSON
+            data = request.get_json()
+            if not data:
+                 return jsonify({"error": {"message": "Invalid JSON"}}), 400
+            text = data.get('input')
+            voice = data.get('voice', voice)
+            speed = data.get('speed', speed)
+            volume = data.get('volume', volume)
+            pitch = data.get('pitch', pitch)
+            style = data.get('style', style)
+
+        if not text:
+             return jsonify({"error": {"message": "No input text"}}), 400
+
+        # Format parameters
+        rate_val = int((float(speed) - 1.0) * 100)
+        rate = f"+{rate_val}%" if rate_val >= 0 else f"{rate_val}%"
+        
+        vol_val = int(float(volume) * 100)
+        vol = f"+{vol_val}%" if vol_val >= 0 else f"{vol_val}%"
+        
+        pitch_val = int(pitch)
+        pitch_str = f"+{pitch_val}Hz" if pitch_val >= 0 else f"{pitch_val}Hz"
+        
+        output_format = "audio-24khz-48kbitrate-mono-mp3"
+
+        # Process
+        clean_text = text.strip()
+        if len(clean_text) <= 1500:
+            audio_data = tts_server.get_audio_chunk(clean_text, voice, rate, pitch_str, vol, style, output_format)
+            headers = tts_server.make_cors_headers()
+            headers["Content-Type"] = "audio/mpeg"
+            return Response(audio_data, headers=headers)
+        
+        chunks = tts_server.optimized_text_split(clean_text, 1500)
+        if len(chunks) > 40:
+             return jsonify({"error": {"message": "Text too long"}}), 400
+             
+        # Batch processing
+        final_audio = b""
+        batch_size = 3
+        
+        # Using ThreadPoolExecutor for concurrent requests
+        with ThreadPoolExecutor(max_workers=batch_size) as executor:
+            for i in range(0, len(chunks), batch_size):
+                batch = chunks[i:i + batch_size]
+                futures = []
+                for idx, chunk in enumerate(batch):
+                    if idx > 0:
+                        time.sleep(0.2 * idx)
+                    futures.append(executor.submit(tts_server.get_audio_chunk, chunk, voice, rate, pitch_str, vol, style, output_format))
+                
+                for future in futures:
+                    final_audio += future.result()
+                
+                if i + batch_size < len(chunks):
+                    time.sleep(0.8) # 800ms delay between batches
+
+        headers = tts_server.make_cors_headers()
+        headers["Content-Type"] = "audio/mpeg"
+        return Response(final_audio, headers=headers)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": {"message": str(e)}}), 500
 
 @socketio.on('join_room')
 def on_join_room(data):

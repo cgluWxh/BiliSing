@@ -213,6 +213,13 @@ function updatePlaylist(playlist) {
         if (nextSongContent) {
             nextSongContent.innerHTML = '暂无歌曲';
         }
+        // 处理总时长
+        const estimatedDurationEle = document.getElementById('estimated-duration');
+        // 获取当前播放歌曲时长
+        let totalDuration = currentPlaying ? (currentPlaying.duration || 0) : 0;
+        if (estimatedDurationEle) {
+            estimatedDurationEle.textContent = `(总时长 ${formatDuration(totalDuration)})`;
+        }
         return;
     }
     
@@ -561,6 +568,13 @@ function switchMobileTab(tabName) {
         case 'chat':
             if (chatSection) chatSection.classList.add('active');
             tabButtons[2].classList.add('active');
+            // 滚动到底部显示最新消息
+            const chatMessages = document.getElementById('chat-messages');
+            if (chatMessages) {
+                setTimeout(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 0);
+            }
             break;
     }
 }
