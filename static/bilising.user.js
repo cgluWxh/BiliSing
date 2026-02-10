@@ -1,12 +1,13 @@
 // ==UserScript==
-// @name         BiliSing Master - 哔哩哔哩卡拉OK播放端
-// @namespace    https://github.com/bilising
+// @name         BiliSing Master - 哔哩哔哩远程播放控制播放端
+// @namespace    https://github.com/cgluWxh
 // @version      1.0.0
-// @description  在哔哩哔哩页面上添加卡拉OK播放控制浮窗
+// @description  在哔哩哔哩页面上添加远程播放控制支持
 // @author       BiliSing
 // @match        https://*.bilibili.com/*
 // @match        https://bilibili.com/*
 // @match        https://sing.bilibiili.com/*
+// @match        https://sing.831.moe/*
 // @match        http://localhost:11817/*
 // @grant        none
 // ==/UserScript==

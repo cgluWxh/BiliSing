@@ -118,15 +118,6 @@ document.addEventListener("DOMContentLoaded", function(){
         }
     });
     
-//    let count = 0;
-//    logo.addEventListener("click", function(e){
-//        count++;
-//        if (count>=7) {
-//            userscriptInput.value = "sing.bilibiili.com";
-//            validateInput(userscriptInput);
-//        }
-//    })
-    
     // 输入时清除错误状态
     [userscriptInput, roomIdInput].forEach(input => {
         input.addEventListener("input", function() {

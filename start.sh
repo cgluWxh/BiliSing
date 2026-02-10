@@ -2,7 +2,7 @@
 
 # BiliSing 启动脚本
 
-echo "正在启动 BiliSing 卡拉OK点歌系统..."
+echo "正在启动 BiliSing 远程播放控制系统..."
 
 # 获取脚本所在目录
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -1,5 +1,5 @@
 # BiliSing
-BiliSing 是一个卡拉ok点歌系统。后端由Python+Flask实现，前端由原生js实现。该项目没有任何数据库部分，所有运行时数据保存在内存中。
+BiliSing 是一个适用于哔哩哔哩的远程播放控制系统。后端由Python+Flask实现，前端由原生js实现。该项目没有任何数据库部分，所有运行时数据保存在内存中。
 后端需要维护一个以下类型的房间列表和房间信息。
 typedef RoomList = RoomInfo[]
 typedef RoomInfo = {
