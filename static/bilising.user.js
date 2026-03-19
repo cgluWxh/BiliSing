@@ -4,8 +4,16 @@
 // @version      1.0.0
 // @description  在哔哩哔哩页面上添加远程播放控制支持
 // @author       BiliSing
-// @match        https://*.bilibili.com/*
-// @match        https://bilibili.com/*
+// @match        https://www.bilibili.com/video/*
+// @match        https://bilibili.com/video/*
+// @match        https://www.bilibili.com/audio/*
+// @match        https://bilibili.com/audio/*
+// @match        https://www.bilibili.com/festival/*
+// @match        https://bilibili.com/festival/*
+// @match        https://www.bilibili.com/blackboard/*
+// @match        https://bilibili.com/blackboard/*
+// @match        https://www.bilibili.com/?*
+// @match        https://bilibili.com/?*
 // @match        https://sing.bilibiili.com/*
 // @match        https://sing.831.moe/*
 // @match        http://localhost:11817/*
@@ -81,6 +89,22 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                 document.getElementById('bilising-header-content').textContent = this.originalText;
             }, duration);
         }
+    }
+
+    function fadeVolume(video, from, to, duration) {
+        if (!video) return;
+        const steps = 20;
+        const interval = duration / steps;
+        const delta = (to - from) / steps;
+        let current = from;
+        let count = 0;
+        
+        const timer = setInterval(() => {
+            count++;
+            current += delta;
+            video.volume = Math.max(0, Math.min(1, current));
+            if (count >= steps) clearInterval(timer);
+        }, interval);
     }
 
     function untilElement(selector) {
@@ -202,8 +226,6 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
     let played_songs = [];
     let play_list = [];
     let nextSong = null;
-    let audioContext = null;
-    let gainNode = null;
 
     // TTS朗读队列管理
     const ttsQueue = {
@@ -317,43 +339,25 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
                 
                 this.audioElement.volume = 1;
 
-
+                // 淡出视频音量
                 const transitionDuration = 1; // 音量变化持续时间（秒）
-                if (gainNode) {
-                    // 停止所有之前的变化
-                    gainNode.gain.cancelScheduledValues(audioContext.currentTime);
-                    // 锚定起点
-                    gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime);
-                    // 指数级淡入 (比 linear 舒服得多)
-                    gainNode.gain.exponentialRampToValueAtTime(.2, audioContext.currentTime + transitionDuration);
-                }
-
-                // 播放
+                const video = document.querySelector("#bilibili-player video");
+                fadeVolume(video, video.volume, 0.15, transitionDuration);
+                
+                this.audioElement.src = audioUrl;
                 await this.audioElement.play();
                 
-                // 清理URL对象（在播放结束后）
                 this.audioElement.addEventListener('ended', () => {
-                    if (gainNode) {
-                        // 停止所有之前的变化
-                        gainNode.gain.cancelScheduledValues(audioContext.currentTime);
-                        // 锚定起点
-                        gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime);
-                        // 指数级淡入 (比 linear 舒服得多)
-                        gainNode.gain.exponentialRampToValueAtTime(1, audioContext.currentTime + transitionDuration);
-                    }
+                    // 淡回视频音量
+                    const video = document.querySelector("#bilibili-player video");
+                    fadeVolume(video, video.volume, 1.0, transitionDuration);
                     URL.revokeObjectURL(audioUrl);
                 }, { once: true });
 
             } catch (error) {
                 console.warn('TTS朗读失败:', error);
-                if (gainNode) {
-                    // 停止所有之前的变化
-                    gainNode.gain.cancelScheduledValues(audioContext.currentTime);
-                    // 锚定起点
-                    gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime);
-                    // 指数级淡入 (比 linear 舒服得多)
-                    gainNode.gain.exponentialRampToValueAtTime(1, audioContext.currentTime + transitionDuration);
-                }
+                const video = document.querySelector("#bilibili-player video");
+                if (video) video.volume = 1.0;
                 this.isPlaying = false;
                 this.playNext();
             }
@@ -475,21 +479,6 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             };
             await untilElement(".bpx-player-ctrl-btn.bpx-player-ctrl-web");
             await playFromStart();
-            if (!audioContext) {
-                try {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    if (audioContext.state === 'suspended') {
-                        await audioContext.resume();
-                    }
-                    const video = document.querySelector("#bilibili-player video");
-                    const source = audioContext.createMediaElementSource(video);
-                    gainNode = audioContext.createGain();
-                    gainNode.gain.value = 1.0;
-                    source.connect(gainNode).connect(audioContext.destination);
-                } catch (e) {
-                    console.warn('初始化 AudioContext 失败:', e);
-                }
-            }
             // 恢复朗读队列
             try {
                 if (ttsQueue.enabled && !ttsQueue.isPlaying && ttsQueue.queue.length === 0) {
