@@ -14,6 +14,8 @@
 // @match        https://bilibili.com/blackboard/*
 // @match        https://www.bilibili.com/?*
 // @match        https://bilibili.com/?*
+// @match        https://bilibili.com/
+// @match        https://www.bilibili.com/
 // @match        https://sing.bilibiili.com/*
 // @match        https://sing.831.moe/*
 // @match        http://localhost:11817/*
@@ -1186,7 +1188,7 @@ var QRCode=function(t){"use strict";function R(){return void 0!==a}var a,O=[0,26
             if (pMatch) {
                 p = parseInt(pMatch[1]);
             }
-            if (bvId && bvId !== manifest.bvid) {
+            if (bvId && (bvId !== manifest.bvid || p !== manifest.p)) {
                 window.player.reload({ bvid: bvId, p: p });
                 window.player.once(window.nano.EventType.Player_Play, async (e) => { await playFromStart(); });
             }
