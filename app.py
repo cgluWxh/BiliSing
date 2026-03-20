@@ -86,7 +86,7 @@ def extract_bilibili_info(url):
                         if 0 <= p_index < len(video_data['pages']):
                             part_name = ''
                             try:
-                                video_data['title'] += f' - {video_data["pages"][p_index]["part"] if video_data["pages"][p_index]["part"] != video_data["title"] else ""}'
+                                video_data['title'] += f' - {video_data["pages"][p_index]["part"]}' if video_data["pages"][p_index]["part"] != video_data["title"] else ""
                             except:
                                 pass
                             duration = video_data['pages'][p_index]['duration']
@@ -94,7 +94,7 @@ def extract_bilibili_info(url):
                         if 'pages' in video_data and len(video_data['pages']) > 0:
                             part_name = ''
                             try:
-                                video_data['title'] += f' - {video_data["pages"][0]["part"] if video_data["pages"][0]["part"] != video_data["title"] else ""}'
+                                video_data['title'] += f' - {video_data["pages"][0]["part"]}' if video_data["pages"][0]["part"] != video_data["title"] else ""
                             except:
                                 pass
                             duration = video_data['pages'][0]['duration']
