@@ -34,7 +34,7 @@ function joinRoom(defaultuser = false) {
             }
         } else if (browser.isMobile) {
             if (confirm("📱 您需要下载安卓客户端以正常使用, 是否下载? 如已安装请点击取消并使用 App!")) {
-                location.href = `/static/BiliSing_1.0.apk`;
+                location.href = `/static/BiliSing_2.0.apk`;
             }
         } else {
             if (window.__BILISING_USERSCRIPT_ENABLED__) {
