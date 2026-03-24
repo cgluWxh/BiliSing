@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="referrer" content="no-referrer">
     <title>BiliSing</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="{{ url_for('static', filename='bilising.user.js') }}"></script>
@@ -54,6 +55,10 @@
 
                     <div class="add-song">
                         <h3>🎵 添加歌曲</h3>
+                        <div class="add-song-search-row">
+                            <button onclick="openSearchModal()">🔍 搜索哔哩哔哩</button>
+                        </div>
+                        <div class="add-song-divider"><span>或</span></div>
                         <div class="add-song-input-row">
                             <input type="text" id="bilibili-url" placeholder="🔗 粘贴哔哩哔哩分享链接">
                             <button id="add-song-btn" onclick="addSong()">➕</button>
@@ -94,6 +99,27 @@
                     
                     
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 哔哩哔哩搜索 Modal -->
+    <div id="bili-search-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>🔍 搜索哔哩哔哩</h3>
+                <button class="modal-close" onclick="closeSearchModal()">✕</button>
+            </div>
+            <div class="modal-search-row">
+                <div class="search-input-wrap">
+                    <input type="text" id="bili-search-input" placeholder="输入关键词..." autocomplete="off">
+                    <div id="bili-suggest-list" class="suggest-list"></div>
+                </div>
+                <button onclick="doSearch()">搜索</button>
+            </div>
+            <div class="modal-body">
+                <div id="bili-search-results"></div>
+                <div id="bili-detail-panel" style="display:none;"></div>
             </div>
         </div>
     </div>

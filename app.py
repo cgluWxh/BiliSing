@@ -6,6 +6,7 @@ import time
 import requests
 from urllib.parse import urlparse, parse_qs, urlunparse
 from concurrent.futures import ThreadPoolExecutor
+from bili_api import extract_bilibili_info, convert_b23, search_suggest, search_video, get_video_info
 import tts_server
 
 app = Flask(__name__)
@@ -44,77 +45,6 @@ class RoomInfo:
         self.played_songs = []
         self.messages = []  # 存储聊天消息
         self.last_activity = time.time()  # 记录最后活跃时间
-
-def convert_b23(b23_url):
-    try:
-        # 不允许自动重定向，以便手动检查 Location 头
-        resp = requests.get(b23_url, allow_redirects=False, headers={
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
-            'Referer': 'https://www.bilibili.com/'})
-    except requests.RequestException as e:
-        raise RuntimeError(f"Request failed: {e}")
-
-    if resp.status_code in [301, 302]:
-        location = resp.headers.get("Location")
-        if not location:
-            raise ValueError("No redirect location found in response.")
-    else:
-        location = b23_url
-
-    return location
-
-def extract_bilibili_info(url):
-    """从哔哩哔哩链接中提取视频信息"""
-    bv_match = re.search(r'BV[\w]+', url) 
-    p_match = re.search(r'[?&]p=(\d+)', url)
-    if bv_match:
-        bv_id = bv_match.group()
-        apiurl = f'https://api.bilibili.com/x/web-interface/view?bvid={bv_id}'
-        resp = requests.get(apiurl, headers={
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
-            'Referer': 'https://www.bilibili.com/',
-            'Accept': 'application/json, text/plain, */*'})
-        if resp.status_code == 200:
-            data = resp.json()
-            if data['code'] == 0:
-                video_data = data['data']
-                duration = video_data['duration']
-                # 如果指定了分P，尝试获取对应分P的时长
-                try:
-                    if p_match:
-                        p_index = int(p_match.group(1)) - 1
-                        if 0 <= p_index < len(video_data['pages']):
-                            part_name = ''
-                            try:
-                                video_data['title'] += f' - {video_data["pages"][p_index]["part"]}' if video_data["pages"][p_index]["part"] != video_data["title"] else ""
-                            except:
-                                pass
-                            duration = video_data['pages'][p_index]['duration']
-                    else:
-                        if 'pages' in video_data and len(video_data['pages']) > 0:
-                            part_name = ''
-                            try:
-                                video_data['title'] += f' - {video_data["pages"][0]["part"]}' if video_data["pages"][0]["part"] != video_data["title"] else ""
-                            except:
-                                pass
-                            duration = video_data['pages'][0]['duration']
-                except:
-                    if not duration:
-                        duration = 0
-                return {
-                    'title': video_data['title'],
-                    'producer': video_data['owner']['name'],
-                    'duration': duration,
-                    'url': f'https://www.bilibili.com/video/{bv_id}',
-                }
-        # 如果API调用失败或数据不完整，返回默认信息
-        return {
-            'title': f'视频标题 {bv_id}',
-            'producer': '未知UP主',
-            'duration': 0,
-            'url': url
-        }
-    return None
 
 def add_message_to_room(room_id, user_name, content, message_type='user'):
     """向房间添加消息"""
@@ -268,6 +198,52 @@ def audio_speech():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": {"message": str(e)}}), 500
+    
+@app.route("/api/bili/suggest", methods=["GET"])
+def bili_suggest():
+    term = request.args.get("term", "").strip()
+    if not term:
+        return jsonify([])
+    return jsonify(search_suggest(term))
+
+
+@app.route("/api/bili/search", methods=["POST"])
+def search_bili():
+    data = request.get_json() or {}
+    keyword = data.get("keyword", "").strip()
+    if not keyword:
+        return jsonify({"error": "keyword is required", "num_results": 0, "videos": []}), 400
+    result = search_video(
+        keyword=keyword,
+        page=data.get("page", 1),
+        order=data.get("order"),
+        duration=data.get("duration"),
+        tids=data.get("tids"),
+        order_sort=data.get("order_sort"),
+        pub_begin=data.get("pub_begin"),
+        pub_end=data.get("pub_end"),
+    )
+    return jsonify(result)
+
+
+@app.route("/api/bili/pages", methods=["GET"])
+def bili_pages():
+    bvid = request.args.get("bvid", "").strip()
+    if not bvid:
+        return jsonify({"error": "bvid is required"}), 400
+    data = get_video_info(bvid)
+    if not data:
+        return jsonify({"error": "无法获取视频信息"}), 400
+    return jsonify({
+        "title": data.get("title", ""),
+        "owner": data.get("owner", {}),
+        "duration": data.get("duration", 0),
+        "pages": [
+            {"page": p.get("page"), "part": p.get("part", ""), "duration": p.get("duration", 0)}
+            for p in data.get("pages", [])
+        ],
+    })
+
 
 @socketio.on('join_room')
 def on_join_room(data):

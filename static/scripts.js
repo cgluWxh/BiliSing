@@ -453,8 +453,18 @@ function showError(message) {
 }
 
 // 按Enter键提交
-document.addEventListener('keypress', function(e) {
+// 增加 compositionstart/end 监听，确保输入法状态准确
+let isComposing = false;
+document.addEventListener('compositionstart', function() {
+    isComposing = true;
+});
+document.addEventListener('compositionend', function() {
+    isComposing = false;
+});
+
+document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
+        if (isComposing || e.isComposing || e.keyCode === 229) return; // 如果正在输入法组合，不触发提交
         if (document.getElementById('join-section').style.display !== 'none') {
             joinRoom();
         } else if (document.activeElement.id === 'bilibili-url') {
@@ -573,3 +583,244 @@ function switchMobileTab(tabName) {
 }
 
 // document.addEventListener('visibilitychange', requestPlaylistUpdate);
+
+// ==================== 哔哩哔哩搜索 Modal ====================
+
+let _suggestTimer = null;
+let _searchPage = 1;
+let _searchKeyword = '';
+let _pendingAddUrl = null;
+let _partsCache = { title: '', bvid: '', pages: [] };
+
+function openSearchModal() {
+    document.getElementById('bili-search-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('bili-search-input').focus(), 50);
+}
+
+function closeSearchModal() {
+    document.getElementById('bili-search-modal').style.display = 'none';
+    document.getElementById('bili-search-input').value = '';
+    document.getElementById('bili-search-results').innerHTML = '';
+    document.getElementById('bili-detail-panel').style.display = 'none';
+    hideSuggest();
+    _searchKeyword = '';
+    _searchPage = 1;
+    _pendingAddUrl = null;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('bili-search-input');
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', function () {
+        const term = this.value.trim();
+        clearTimeout(_suggestTimer);
+        if (!term) { hideSuggest(); return; }
+        _suggestTimer = setTimeout(() => fetchSuggest(term), 280);
+    });
+
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            if (isComposing || e.isComposing || e.keyCode === 229) return; // 如果正在输入法组合，不触发提交
+            e.stopPropagation();
+            hideSuggest();
+            doSearch();
+        } else if (e.key === 'Escape') {
+            e.stopPropagation();
+            closeSearchModal();
+        }
+    });
+
+    document.getElementById('bili-suggest-list').addEventListener('click', function (e) {
+        const item = e.target.closest('.suggest-item');
+        if (!item) return;
+        document.getElementById('bili-search-input').value = item.dataset.term;
+        hideSuggest();
+        doSearch();
+    });
+
+    document.getElementById('bili-search-modal').addEventListener('click', function (e) {
+        if (e.target === this) closeSearchModal();
+    });
+
+    // Close suggest when clicking outside the input area
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.search-input-wrap')) hideSuggest();
+    }, true);
+});
+
+async function fetchSuggest(term) {
+    try {
+        const resp = await fetch(`/api/bili/suggest?term=${encodeURIComponent(term)}`);
+        const items = await resp.json();
+        renderSuggest(items);
+    } catch (e) { hideSuggest(); }
+}
+
+function _positionSuggestList() {
+    const input = document.getElementById('bili-search-input');
+    const list = document.getElementById('bili-suggest-list');
+    if (!input || !list) return;
+    const rect = input.getBoundingClientRect();
+    list.style.top = (rect.bottom + 4) + 'px';
+    list.style.left = rect.left + 'px';
+    list.style.width = rect.width + 'px';
+}
+
+function renderSuggest(items) {
+    const list = document.getElementById('bili-suggest-list');
+    if (!items || items.length === 0) { hideSuggest(); return; }
+    list.innerHTML = '';
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'suggest-item';
+        div.dataset.term = item.term;
+        div.innerHTML = item.name || escapeHtml(item.term);
+        list.appendChild(div);
+    });
+    _positionSuggestList();
+    list.style.display = 'block';
+}
+
+function hideSuggest() {
+    const list = document.getElementById('bili-suggest-list');
+    if (list) list.style.display = 'none';
+    if (_suggestTimer) {
+        clearTimeout(_suggestTimer);
+        _suggestTimer = null;
+    }
+}
+
+async function doSearch(page = 1) {
+    const keyword = document.getElementById('bili-search-input').value.trim();
+    if (!keyword) return;
+    _searchKeyword = keyword;
+    _searchPage = page;
+
+    const resultsEl = document.getElementById('bili-search-results');
+    resultsEl.innerHTML = '<div class="bili-loading">搜索中...</div>';
+    resultsEl.style.display = 'block';
+    document.getElementById('bili-detail-panel').style.display = 'none';
+
+    try {
+        const resp = await fetch('/api/bili/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keyword, page })
+        });
+        const data = await resp.json();
+        renderSearchResults(data);
+    } catch (e) {
+        resultsEl.innerHTML = '<div class="bili-loading">搜索失败，请重试</div>';
+    }
+}
+
+function renderSearchResults(data) {
+    const resultsEl = document.getElementById('bili-search-results');
+    if (!data.videos || data.videos.length === 0) {
+        resultsEl.innerHTML = '<div class="bili-loading">暂无结果</div>';
+        return;
+    }
+    let html = `<div class="bili-result-count">共 ${data.num_results} 条结果</div>`;
+    data.videos.forEach(v => {
+        html += `
+            <div class="bili-result-item" onclick="onVideoResultClick('${escapeHtml(v.bvid)}')">
+                <img class="bili-cover" src="${escapeHtml(v.cover)}" alt="" loading="lazy">
+                <div class="bili-result-info">
+                    <div class="bili-result-title">${escapeHtml(v.title)}</div>
+                    <div class="bili-result-meta">UP主: ${escapeHtml(v.owner.name)} · 时长: ${escapeHtml(v.duration || '')}</div>
+                </div>
+            </div>`;
+    });
+    html += `
+        <div class="bili-pagination">
+            ${_searchPage > 1 ? `<button onclick="doSearch(${_searchPage - 1})">上一页</button>` : ''}
+            <span>第 ${_searchPage} 页</span>
+            <button onclick="doSearch(${_searchPage + 1})">下一页</button>
+        </div>`;
+    resultsEl.innerHTML = html;
+}
+
+async function onVideoResultClick(bvid) {
+    const detailPanel = document.getElementById('bili-detail-panel');
+    const resultsEl = document.getElementById('bili-search-results');
+    
+    if (resultsEl) resultsEl.style.display = 'none';
+    detailPanel.innerHTML = '<div class="bili-loading">获取视频信息中...</div>';
+    detailPanel.style.display = 'block';
+
+    try {
+        const resp = await fetch(`/api/bili/pages?bvid=${encodeURIComponent(bvid)}`);
+        const data = await resp.json();
+        if (data.error) {
+            detailPanel.innerHTML = `<div class="bili-loading">获取失败：${escapeHtml(data.error)}</div>`;
+            return;
+        }
+        if (data.pages && data.pages.length > 1) {
+            _partsCache = { title: data.title, bvid, pages: data.pages };
+            showPartsPanel();
+        } else {
+            showConfirmPanel(data.title, `https://www.bilibili.com/video/${bvid}`);
+        }
+    } catch (e) {
+        detailPanel.innerHTML = '<div class="bili-loading">获取失败，请重试</div>';
+    }
+}
+
+function showConfirmPanel(title, url) {
+    _pendingAddUrl = url;
+    document.getElementById('bili-detail-panel').innerHTML = `
+        <div class="bili-confirm">
+            <p>确认添加：</p>
+            <p class="bili-confirm-title">${escapeHtml(title)}</p>
+            <div class="bili-confirm-actions">
+                <button onclick="confirmAddSong()">✅ 确认添加</button>
+                <button class="btn-cancel" onclick="hideDetailPanel()">✕ 取消</button>
+            </div>
+        </div>`;
+}
+
+function showPartsPanel() {
+    const { title, pages } = _partsCache;
+    let html = `
+        <div class="bili-parts-header">
+            <button class="btn-back" onclick="hideDetailPanel()">← 返回</button>
+            <span>选择分P · ${escapeHtml(title)}</span>
+        </div>
+        <div class="bili-parts-list">`;
+    pages.forEach((p, i) => {
+        html += `
+            <div class="bili-part-item" onclick="selectPart(${i})">
+                <span class="bili-part-num">P${p.page}</span>
+                <span class="bili-part-name">${escapeHtml(p.part)}</span>
+                <span class="bili-part-dur">${formatDuration(p.duration)}</span>
+            </div>`;
+    });
+    html += '</div>';
+    const detailPanel = document.getElementById('bili-detail-panel');
+    detailPanel.innerHTML = html;
+    detailPanel.style.display = 'block';
+}
+
+function selectPart(index) {
+    const p = _partsCache.pages[index];
+    const url = `https://www.bilibili.com/video/${_partsCache.bvid}?p=${p.page}`;
+    const partTitle = `${_partsCache.title} - P${p.page}: ${p.part}`;
+    showConfirmPanel(partTitle, url);
+}
+
+function hideDetailPanel() {
+    document.getElementById('bili-detail-panel').style.display = 'none';
+    const resultsEl = document.getElementById('bili-search-results');
+    if (resultsEl) resultsEl.style.display = 'block';
+}
+
+function confirmAddSong() {
+    if (!_pendingAddUrl || !socket) return;
+    socket.emit('add_song', {
+        room_id: currentRoom,
+        url: _pendingAddUrl,
+        user_name: currentUser
+    });
+    closeSearchModal();
+}
