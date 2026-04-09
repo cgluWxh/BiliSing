@@ -276,8 +276,24 @@ def video_room(room_id):
             return "<video controls autoplay><source src='{}' type='audio/mpeg'>Your browser does not support the audio element.</video>".format(url)
         elif query_type == 'proxy':
             try:
-                resp = requests.get(url, stream=True, headers=BASE_HEADERS_TV)
-                return Response(resp.iter_content(chunk_size=8192), content_type=resp.headers.get('Content-Type', 'application/octet-stream'))
+                req_headers = dict(BASE_HEADERS_TV)
+                # 转发客户端的 Range 头，用于支持进度条拖动和断点续传
+                range_header = request.headers.get('Range', None)
+                if range_header:
+                    req_headers['Range'] = range_header
+
+                resp = requests.get(url, stream=True, headers=req_headers)
+                
+                response = Response(resp.iter_content(chunk_size=8192), 
+                                    status=resp.status_code, 
+                                    content_type=resp.headers.get('Content-Type', 'application/octet-stream'))
+                
+                # 透传关键响应头，使浏览器知道支持 Range 并且获取正确的长度和范围
+                for header in ['Content-Length', 'Content-Range', 'Accept-Ranges']:
+                    if header in resp.headers:
+                        response.headers[header] = resp.headers[header]
+                        
+                return response
             except Exception as e:
                 print(f"Error proxying audio: {e}")
                 return "无法获取播放地址", 500
