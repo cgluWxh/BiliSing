@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, Response, jsonify
+from flask import Flask, render_template, request, Response, jsonify, redirect
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import uuid
 import re
@@ -6,7 +6,7 @@ import time
 import requests
 from urllib.parse import urlparse, parse_qs, urlunparse
 from concurrent.futures import ThreadPoolExecutor
-from bili_api import extract_bilibili_info, convert_b23, search_suggest, search_video, get_video_info
+from bili_api import extract_bilibili_info, convert_b23, search_suggest, search_video, get_video_info, get_direct_play_url
 import tts_server
 
 app = Flask(__name__)
@@ -243,6 +243,40 @@ def bili_pages():
             for p in data.get("pages", [])
         ],
     })
+    
+@app.route("/v/<room_id>")
+def video_room(room_id):
+    query_type = request.args.get('t', 'redirect')
+    # 检查房间是否存在且是否过期
+    room_exists = room_id in rooms
+    room_expired = is_room_expired(room_id) if room_exists else False
+    
+    # 如果房间过期，清除数据
+    if room_expired:
+        clear_expired_room(room_id)
+        room_exists = False
+    
+    # 如果房间不存在且用户是master，则创建房间
+    if not room_exists:
+        rooms[room_id] = RoomInfo(room_id)
+
+    room = rooms.get(room_id)
+    update_room_activity(room_id)
+    cur = room.current_playing
+    if not cur:
+        return "当前没有播放歌曲", 404
+    
+    url = get_direct_play_url(cur.url)
+    if url:
+        if query_type == 'redirect':
+            return redirect(url)
+        elif query_type == 'link':
+            return "<a href='{}'>点击这里播放</a>".format(url)
+        elif query_type == 'inline':
+            return "<video controls autoplay><source src='{}' type='audio/mpeg'>Your browser does not support the audio element.</video>".format(url)
+    else:
+        return "无法获取播放地址", 500
+    
 
 
 @socketio.on('join_room')

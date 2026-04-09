@@ -362,3 +362,136 @@ def extract_bilibili_info(url: str) -> dict | None:
         "duration": duration,
         "url": f"https://www.bilibili.com/video/{bv_id}",
     }
+
+
+# ==================== 6. TV端播放直链获取 ====================
+
+APPKEY_TV = "dfca71928277209b"
+APPSEC_TV = "b5475a8825547a4fc26c7d518eaaa02e"
+
+USER_AGENT_TV = (
+    "Mozilla/5.0 BiliDroid/2.0.1 (bbcallen@gmail.com) "
+    "os/android model/android_hd mobi_app/android_hd "
+    "build/2001100 channel/master innerVer/2001100 osVer/15 network/2"
+)
+
+BASE_HEADERS_TV = {
+    "User-Agent": USER_AGENT_TV,
+    "env": "prod",
+    "app-key": "android64",
+    "x-bili-aurora-zone": "sh001",
+}
+
+
+def _app_sign(params: dict) -> dict:
+    params = dict(params)
+    params["appkey"] = APPKEY_TV
+    params["ts"] = str(int(time.time()))
+    sorted_items = sorted(params.items(), key=lambda x: x[0])
+    parts = []
+    for k, v in sorted_items:
+        if v is None:
+            continue
+        parts.append(
+            f"{urllib.parse.quote(str(k), safe='')}={urllib.parse.quote(str(v), safe='')}"
+        )
+    query = "&".join(parts)
+    params["sign"] = hashlib.md5((query + APPSEC_TV).encode("utf-8")).hexdigest()
+    return params
+
+
+def parse_bilibili_input(raw: str) -> tuple:
+    """
+    从各种形式的输入中提取 bvid 和 page
+
+    返回: (bvid, page)  page 从 1 开始
+    """
+    if "b23.tv" in raw:
+        try:
+            raw = convert_b23(raw)
+        except Exception:
+            pass
+
+    raw = raw.strip()
+
+    # 通用提取 BV号 和 p 参数
+    bv_match = re.search(r"BV[\w]+", raw, re.IGNORECASE)
+    if not bv_match:
+        raise ValueError(f"输入中找不到BV号: {raw}")
+    
+    bvid = bv_match.group()
+
+    p_match = re.search(r"[?&]p=(\d+)", raw)
+    page = int(p_match.group(1)) if p_match else 1
+
+    return bvid, page
+
+
+def tv_playurl(aid: int, cid: int, qn: int = 80, access_key: str = None) -> dict:
+    """复刻 PiliPlus VideoHttp.tvPlayUrl"""
+    params = {
+        "actionKey": "appkey",
+        "cid": cid,
+        "fourk": 1,
+        "is_proj": 1,
+        "mobi_app": "android",
+        "object_id": aid,
+        "platform": "android",
+        "playurl_type": 1,
+        "protocol": 0,
+        "qn": qn,
+    }
+    if access_key:
+        params["access_key"] = access_key
+        params["mobile_access_key"] = access_key
+    params = _app_sign(params)
+    resp = requests.get(
+        "https://api.bilibili.com/x/tv/playurl",
+        params=params,
+        headers=BASE_HEADERS_TV,
+    )
+    return resp.json()
+
+
+def get_direct_play_url(url: str, qn: int = 80) -> str | None:
+    """
+    通过 B站 URL 获取直链播放地址 (音视频合一)
+    """
+    try:
+        bvid, page = parse_bilibili_input(url)
+    except ValueError:
+        return None
+
+    info = get_video_info(bvid)
+    if not info:
+        return None
+    aid = info["aid"]
+    pages = info.get("pages", [])
+
+    if page < 1 or page > len(pages):
+        return None
+    
+    cid = pages[page - 1]["cid"]
+
+    result = tv_playurl(aid=aid, cid=cid, qn=qn)
+    if result["code"] != 0:
+        # fallback
+        for fq in [64, 32, 16]:
+            if fq >= qn:
+                continue
+            result = tv_playurl(aid=aid, cid=cid, qn=fq)
+            if result["code"] == 0:
+                break
+        
+        if result["code"] != 0:
+            return None
+
+    data = result.get("data") or result.get("result")
+    if not data:
+        return None
+    
+    durls = data.get("durl", [])
+    if not durls:
+        return None
+    
+    return durls[0].get("url")
