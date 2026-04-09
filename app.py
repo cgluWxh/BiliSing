@@ -6,7 +6,7 @@ import time
 import requests
 from urllib.parse import urlparse, parse_qs, urlunparse
 from concurrent.futures import ThreadPoolExecutor
-from bili_api import extract_bilibili_info, convert_b23, search_suggest, search_video, get_video_info, get_direct_play_url
+from bili_api import extract_bilibili_info, convert_b23, search_suggest, search_video, get_video_info, get_direct_play_url, BASE_HEADERS_TV
 import tts_server
 
 app = Flask(__name__)
@@ -274,6 +274,13 @@ def video_room(room_id):
             return "<a href='{}'>点击这里播放</a>".format(url)
         elif query_type == 'inline':
             return "<video controls autoplay><source src='{}' type='audio/mpeg'>Your browser does not support the audio element.</video>".format(url)
+        elif query_type == 'proxy':
+            try:
+                resp = requests.get(url, stream=True, headers=BASE_HEADERS_TV)
+                return Response(resp.iter_content(chunk_size=8192), content_type=resp.headers.get('Content-Type', 'application/octet-stream'))
+            except Exception as e:
+                print(f"Error proxying audio: {e}")
+                return "无法获取播放地址", 500
     else:
         return "无法获取播放地址", 500
     
