@@ -26,8 +26,10 @@
                     <option value="master">播放设备</option>
                 </select>
                 <input type="text" id="user-name" placeholder="用户名" required>
-                <button onclick="joinRoom()">加入房间</button>
-                <button onclick="joinRoom(true)">匿名加入</button>
+                <button class="master-options" onclick="joinRoom(false, 'plugin')" style="background-color: #fb7299;">🧩 通过插件播放 (高清)</button>
+                <button class="master-options" onclick="joinRoom(false, 'web')" style="background-color: #00aeec;">🌐 直接通过网页播放 (标清)</button>
+                <button class="normal-options" onclick="joinRoom()">加入房间</button>
+                <button class="normal-options" onclick="joinRoom(true)">匿名加入</button>
             </div>
         </div>
 

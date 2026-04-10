@@ -246,22 +246,16 @@ def bili_pages():
     
 @app.route("/v/<room_id>")
 def video_room(room_id):
-    query_type = request.args.get('t', 'redirect')
-    # 检查房间是否存在且是否过期
-    room_exists = room_id in rooms
-    room_expired = is_room_expired(room_id) if room_exists else False
+    query_type = request.args.get('t', 'inline')
     
-    # 如果房间过期，清除数据
-    if room_expired:
-        clear_expired_room(room_id)
-        room_exists = False
+    if query_type == 'inline':
+        return render_template('webplayer.html', room_id=room_id)
     
-    # 如果房间不存在且用户是master，则创建房间
-    if not room_exists:
-        rooms[room_id] = RoomInfo(room_id)
-
     room = rooms.get(room_id)
-    update_room_activity(room_id)
+    
+    if not room:
+        return "房间不存在", 404
+
     cur = room.current_playing
     if not cur:
         return "当前没有播放歌曲", 404
@@ -272,8 +266,6 @@ def video_room(room_id):
             return redirect(url)
         elif query_type == 'link':
             return "<a href='{}'>点击这里播放</a>".format(url)
-        elif query_type == 'inline':
-            return "<video controls autoplay><source src='{}' type='audio/mpeg'>Your browser does not support the audio element.</video>".format(url)
         elif query_type == 'proxy':
             try:
                 req_headers = dict(BASE_HEADERS_TV)
@@ -680,4 +672,4 @@ def on_disconnect():
     pass
 
 if __name__ == '__main__':
-    socketio.run(app, debug=False, host='127.0.0.1', port=11817)
+    socketio.run(app, debug=True, host='0.0.0.0', port=11817)

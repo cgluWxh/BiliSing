@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>BiliSing Web Player</title>
+    <script src="/static/bilising.user.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #fff;
+        }
+
+        /* 保证视频显示面积最大化 */
+        #player-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* 满屏比例最大化包含 */
+            outline: none;
+            border: none;
+        }
+
+        /* 悬浮信息面板：带有玻璃效果的背景 */
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 二维码容器 */
+        #qr-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        #qr-container canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        #qr-container p {
+            margin: 5px 0 0 0;
+            color: #333;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="player-container">
+        <video id="videoElement" controls autoplay playsinline></video>
+    </div>
+
+    <div id="info-panel">
+        <p class="title" id="song-title">正在连接...</p>
+    </div>
+
+    <div id="qr-container">
+        <canvas id="qrcode"></canvas>
+        <p>扫码点歌 <span id="play-mode-toggle" style="cursor:pointer; color:#00aeec;">(从源)</span></p>
+    </div>
+
+    <script>
+        // 兼容 older Chrome 52
+        // ES5 编写以免语法不兼容
+        var roomId = "{{ room_id }}";
+        var serverUrl = window.location.protocol + '//' + window.location.host;
+        var socket = io(serverUrl);
+        var videoElement = document.getElementById('videoElement');
+
+        // 生成二维码
+        var fullUrl = serverUrl + '/?bilising-room-id=' + roomId;
+        var qrOptions = {
+            width: 100,
+            margin: 1,
+            errorCorrectionLevel: 'H'
+        };
+        try {
+            QRCode.toCanvas(document.getElementById('qrcode'), fullUrl, qrOptions);
+        } catch (e) {
+            console.warn('生成二维码失败:', e);
+        }
+
+        // Socket 处理
+        var currentPlaying = null;
+        var nextSong = null;
+
+        function updateHeaderText() {
+            var currentTitle = currentPlaying ? (currentPlaying.title || '未知歌曲') : '暂无歌曲';
+            var nextTitle = nextSong ? (nextSong.title || '未知歌曲') : null;
+            
+            var headStr = '';
+            if (nextTitle) {
+                headStr = '下一首: ' + nextTitle + ' ; 正播放: ' + currentTitle;
+            } else {
+                headStr = '已是最后一首歌曲 ; 正播放: ' + currentTitle;
+            }
+            document.getElementById('song-title').innerText = headStr;
+        }
+
+        socket.on('connect', function() {
+            document.getElementById('song-title').innerText = '已连接到房间: ' + roomId;
+            socket.emit('join_room', {
+                room_id: roomId,
+                user_name: '播放设备',
+                user_type: 'master'
+            });
+        });
+
+        socket.on('disconnect', function() {
+            document.getElementById('song-title').innerText = '连接已断开，重试中...';
+        });
+
+        socket.on('error', function(data) {
+            document.getElementById('song-title').innerText = '出错: ' + data.message;
+        });
+
+        socket.on('room_joined', function(data) {
+            currentPlaying = data.current_playing || null;
+            nextSong = (data.play_list && data.play_list.length > 0) ? data.play_list[0] : null;
+            updateHeaderText();
+            updatePlayer(currentPlaying);
+        });
+
+        socket.on('now_playing', function(data) {
+            currentPlaying = data.current_playing || null;
+            updateHeaderText();
+            updatePlayer(currentPlaying);
+        });
+
+        socket.on('playlist_updated', function(data) {
+            var playlist = data.play_list || [];
+            nextSong = (playlist.length > 0) ? playlist[0] : null;
+            updateHeaderText();
+        });
+
+        videoElement.addEventListener('ended', function() {
+            // 切歌
+            socket.emit('next_song', {
+                room_id: roomId,
+                user_name: 'Web播放设备'
+            });
+        });
+
+        var playMode = 'redirect';
+        var modeToggle = document.getElementById('play-mode-toggle');
+        
+        modeToggle.addEventListener('click', function() {
+            if (playMode === 'proxy') {
+                playMode = 'redirect'; // redirect 对应从源地址播放
+                modeToggle.innerText = '(从源)';
+            } else {
+                playMode = 'proxy';
+                modeToggle.innerText = '(从代理)';
+            }
+            // 切换后立即刷新当前源
+            if (currentPlaying) {
+                updatePlayer(currentPlaying);
+            }
+        });
+
+        function updatePlayer(songInfo) {
+            if (!songInfo || !songInfo.url) {
+                videoElement.src = '';
+                return;
+            }
+
+            // 获取音视频
+            var playUrl = '/v/' + roomId + '?t=' + playMode;
+            
+            // 只有当源发生改变时才更新并播放
+            // 如果是重新播放，强制刷新 src
+            videoElement.src = playUrl + '&_t=' + new Date().getTime();
+            videoElement.play().catch(function(e) {
+                console.warn('自动播放被阻止或失败:', e);
+            });
+        }
+    </script>
+</body>
+</html>

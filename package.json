@@ -1,0 +1,26 @@
+{
+  "name": "bilising-git",
+  "version": "1.0.0",
+  "description": "[Changelog](CHANGELOG.md) | [Terms of Service & Privacy Policy](TERMS_AND_PRIVACY.md)",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cgluWxh/BiliSing.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/cgluWxh/BiliSing/issues"
+  },
+  "homepage": "https://github.com/cgluWxh/BiliSing#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.28.6",
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}
