@@ -673,10 +673,26 @@ def on_send_message(data):
     if new_message:
         emit('new_message', {'message': new_message}, room=room_id)
 
+@socketio.on('playback_control')
+def on_playback_control(data):
+    room_id = data['room_id']
+    action = data['action']
+    
+    if room_id not in rooms:
+        emit('error', {'message': '房间不存在'})
+        return
+    
+    # 更新房间活跃时间
+    update_room_activity(room_id)
+    
+    # 广播播放控制指令给所有用户
+    emit('playback_control', {'action': action}, room=room_id)
+    
+
 @socketio.on('disconnect')
 def on_disconnect():
     # 处理用户断开连接
     pass
 
 if __name__ == '__main__':
-    socketio.run(app, debug=False, host='127.0.0.1', port=11817)
+    socketio.run(app, debug=False, host='0.0.0.0', port=11817)

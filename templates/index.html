@@ -54,6 +54,12 @@
                     <div id="current-song-info" class="song-card">
                         <h4>🎶 正在播放：</h4>
                         <div id="current-song-content">暂无歌曲</div>
+                        <div class="playback-controls">
+                            <button onclick="controlPlayback('play_from_start')">🔄 重播</button>
+                            <button onclick="controlPlayback('play_pause')">⏯ 播放/暂停</button>
+                            <button onclick="controlPlayback('volume_down')">🔉 音量-</button>
+                            <button onclick="controlPlayback('volume_up')">🔊 音量+</button>
+                        </div>
                     </div>
 
                     <div class="add-song">

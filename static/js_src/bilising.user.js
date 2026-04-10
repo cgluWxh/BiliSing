@@ -499,7 +499,7 @@ let lastRoomId, myURL;
             <strong id="bilising-noqr-text">二维码未生成，请先连接到一个房间。</strong>
             <div id="bilising-qr-code" style="display: none;">
                 <canvas id="bilising-qr-image" alt="房间二维码"></canvas>
-                <p>扫码点歌</p>
+                <p>扫码点播</p>
             </div>
         </div>
     </div>
@@ -756,15 +756,28 @@ let lastRoomId, myURL;
     }
 
     #bilising-qr-close {
-        font-size: ${sup ? 'calc(var(--bilising-base-font-size) - 2px)' : '11px'} !important;
-        padding: var(--bilising-padding-sm) !important;
-        background: rgba(255, 255, 255, 0.2) !important;
-        border-radius: ${sup ? 'calc(var(--bilising-border-radius) / 2)' : '3px'} !important;
-        margin-left: var(--bilising-padding-sm) !important;
+        position: absolute !important;
+        top: 0 !important;
+        right: 0 !important;
+        font-size: 20px !important;
+        width: 30px !important;
+        height: 30px !important;
+        line-height: 30px !important;
+        text-align: center !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        cursor: pointer !important;
+        background: rgba(0, 0, 0, 0.3) !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        transition: all 0.2s ease !important;
+        z-index: 10002 !important;
+        transform: translate(50%, -50%) !important;
     }
 
     #bilising-qr-close:hover {
-        background: rgba(255, 255, 255, 0.3) !important;
+        background: rgba(0, 0, 0, 0.6) !important;
+        color: #fff !important;
     }
         `;
 
@@ -774,9 +787,10 @@ let lastRoomId, myURL;
         const qrCodeGlobal = document.createElement('div');
         qrCodeGlobal.id = 'bilising-qr-code-float';
         qrCodeGlobal.innerHTML = `
+            <div id="bilising-qr-close" title="关闭">×</div>
             <div id="bilising-qr-code2">
                 <canvas id="bilising-qr-image2" alt="房间二维码"></canvas>
-                <p style="color:white; font-size: 1.5em;">扫码点歌 <span style="color:white; cursor:pointer; font-size: .6em;" id="bilising-qr-close">关闭</span></p>
+                <p style="color:white; font-size: 1.5em; text-align: center;">扫码点播</p>
             </div>
         `;
         qrCodeGlobal.style.display = 'none';
@@ -1109,6 +1123,39 @@ let lastRoomId, myURL;
             }
             headerContentController.setTemporaryText(msgText);
         });
+
+        socket.on('playback_control', function (data) {
+            const isWebplayer = !!window.__BILISING_WEBPLAYER__;
+            const video = isWebplayer ? document.getElementById('videoElement') : document.querySelector("#bilibili-player video");
+            if (data.action === 'play_from_start') {
+                if (isWebplayer) {
+                    if (video) {
+                        video.currentTime = 0;
+                        video.play();
+                    }
+                } else if (window.player && window.player.seek) {
+                    window.player.seek(0);
+                    window.player.play();
+                }
+            } else if (data.action === 'volume_up') {
+                if (!video) return;
+                const current = video.volume;
+                video.volume = Math.min(1, current + 0.1);
+                headerContentController.setTemporaryText(`音量: ${Math.round(video.volume * 100)}%`);
+            } else if (data.action === 'volume_down') {
+                if (!video) return;
+                const current = video.volume;
+                video.volume = Math.max(0, current - 0.1);
+                headerContentController.setTemporaryText(`音量: ${Math.round(video.volume * 100)}%`);
+            } else if (data.action === 'play_pause') {
+                if (!video) return;
+                if (video.paused) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+            }
+        });
     }
 
     // 更新状态显示
@@ -1130,7 +1177,7 @@ let lastRoomId, myURL;
             navigateToVideoIfNeeded(song.url);
         } else {
             currentSongElement.textContent = '暂无歌曲';
-            headerContentController.setOriginalText('已播放完所有歌曲，正在重复播放最后一首，请扫码点歌');
+            headerContentController.setOriginalText('已播放完所有歌曲，正在重复播放最后一首，请扫码点播');
             return;
         }
         // MARK: append
@@ -1192,6 +1239,7 @@ let lastRoomId, myURL;
                         ttsQueue.init();
                         ttsQueue.audioElement.play();
                         video.play();
+                        video.volume = 0.1;
                         document.body.removeChild(btn);
                         video.style.display = 'block';
                     }

@@ -824,3 +824,11 @@ function confirmAddSong() {
     });
     closeSearchModal();
 }
+
+function controlPlayback(action) {
+  if (!socket || !currentRoom) return;
+  socket.emit('playback_control', {
+    room_id: currentRoom,
+    action: action
+  });
+}
