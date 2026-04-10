@@ -107,7 +107,7 @@ def clear_expired_room(room_id):
 def index():
     return render_template('index.html')
 
-@app.route('/v1/audio/speech', methods=['POST', 'OPTIONS'])
+@app.route('/v1/audio/speech', methods=['POST', 'OPTIONS', 'GET'])
 def audio_speech():
     if request.method == 'OPTIONS':
         return Response(status=204, headers=tts_server.make_cors_headers())
@@ -120,32 +120,39 @@ def audio_speech():
         pitch = '0'
         style = "general"
 
-        if request.content_type and 'multipart/form-data' in request.content_type:
-            # Handle file upload
-            file = request.files.get('file')
-            if not file:
-                return jsonify({"error": {"message": "No file"}}), 400
-            
-            text = file.read().decode('utf-8')
-            voice = request.form.get('voice', voice)
-            speed = request.form.get('speed', speed)
-            volume = request.form.get('volume', volume)
-            pitch = request.form.get('pitch', pitch)
-            style = request.form.get('style', style)
+        if request.method == 'POST':
+            if request.content_type and 'multipart/form-data' in request.content_type:
+                # Handle file upload
+                file = request.files.get('file')
+                if not file:
+                    return jsonify({"error": {"message": "No file"}}), 400
+                
+                text = file.read().decode('utf-8')
+                voice = request.form.get('voice', voice)
+                speed = request.form.get('speed', speed)
+                volume = request.form.get('volume', volume)
+                pitch = request.form.get('pitch', pitch)
+                style = request.form.get('style', style)
+            else:
+                # Handle JSON
+                data = request.get_json()
+                if not data:
+                    return jsonify({"error": {"message": "Invalid JSON"}}), 400
+                text = data.get('input')
+                voice = data.get('voice', voice)
+                speed = data.get('speed', speed)
+                volume = data.get('volume', volume)
+                pitch = data.get('pitch', pitch)
+                style = data.get('style', style)
         else:
-            # Handle JSON
-            data = request.get_json()
-            if not data:
-                 return jsonify({"error": {"message": "Invalid JSON"}}), 400
-            text = data.get('input')
-            voice = data.get('voice', voice)
-            speed = data.get('speed', speed)
-            volume = data.get('volume', volume)
-            pitch = data.get('pitch', pitch)
-            style = data.get('style', style)
-
+            text = request.args.get('input', '')
+            voice = request.args.get('voice', voice)
+            speed = request.args.get('speed', speed)
+            volume = request.args.get('volume', volume)
+            pitch = request.args.get('pitch', pitch)
+            style = request.args.get('style', style)
         if not text:
-             return jsonify({"error": {"message": "No input text"}}), 400
+            return jsonify({"error": {"message": "No input text"}}), 400
 
         # Format parameters
         rate_val = int((float(speed) - 1.0) * 100)

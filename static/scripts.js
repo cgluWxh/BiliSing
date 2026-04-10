@@ -31,7 +31,6 @@ function joinRoom(defaultuser = false, masterMode = null) {
       } else {
         alert("⚠️ 您需要先安装浏览器插件才能正常使用！");
       }
-      return;
     } else if (masterMode === 'web') {
       location.href = `/v/${roomId}`;
     }

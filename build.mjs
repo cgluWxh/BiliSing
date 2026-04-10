@@ -5,7 +5,7 @@ import path from "path";
 const srcDir = "static/js_src/";
 const outDir = "static/";
 
-for (const file of fs.readdirSync(srcDir).filter(f => f.endsWith(".js"))) {
+for (const file of ["bilising.user.js", "scripts.js"]) {
   const src = path.join(srcDir, file);
   const out = path.join(outDir, file);
   const content = fs.readFileSync(src, "utf8");
@@ -24,6 +24,7 @@ for (const file of fs.readdirSync(srcDir).filter(f => f.endsWith(".js"))) {
   // 把 meta 插回最前面
   if (metaBlock) {
     const compiled = fs.readFileSync(out, "utf8");
-    fs.writeFileSync(out, metaBlock + "\n" + compiled);
+    const deps = fs.readFileSync(`${srcDir}deps.js`);
+    fs.writeFileSync(out, metaBlock + "\n" + deps + "\n" + compiled);
   }
 }
