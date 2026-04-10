@@ -67,10 +67,10 @@
         /* 二维码容器 */
         #qr-container {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
+            top: 75px; /* 在 info-panel 下方，加上其高度和间距 */
+            left: 20px;
             z-index: 10;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.6);;
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
@@ -84,7 +84,7 @@
 
         #qr-container p {
             margin: 5px 0 0 0;
-            color: #333;
+            color: #fff;
             font-size: 12px;
             font-weight: bold;
         }
