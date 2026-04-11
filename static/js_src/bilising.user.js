@@ -1132,6 +1132,7 @@ let lastRoomId, myURL;
             if (data.action === 'play_from_start') {
                 if (isWebplayer) {
                     if (video) {
+                        video.src = `/v/${currentRoom}?t=proxy&_t=${Date.now()}`;
                         video.currentTime = 0;
                         video.play();
                     }
