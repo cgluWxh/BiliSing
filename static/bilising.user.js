@@ -831,7 +831,7 @@ let lastRoomId, myURL;
 
     #bilising-qr-close {
         position: absolute !important;
-        top: 0 !important;
+        bottom: 0 !important;
         right: 0 !important;
         font-size: 20px !important;
         width: 30px !important;
@@ -846,7 +846,7 @@ let lastRoomId, myURL;
         margin: 0 !important;
         transition: all 0.2s ease !important;
         z-index: 10002 !important;
-        transform: translate(50%, -50%) !important;
+        transform: translate(40%, 40%) !important;
     }
 
     #bilising-qr-close:hover {
@@ -1267,36 +1267,38 @@ let lastRoomId, myURL;
       if (window.__BILISING_WEBPLAYER__) {
         const video = document.getElementById('videoElement');
         if (video) {
-          const mode = localStorage.getItem('bilising-play-mode') || 'proxy';
+          const mode = localStorage.getItem('bilising-play-mode') || 'redirect';
           video.src = `/v/${currentRoom}?t=${mode}&_t=${Date.now()}`;
           video.play().catch(e => {
-            video.style.display = 'none';
-            const btn = document.createElement('button');
-            btn.textContent = '点击允许播放';
-            btn.style = `
-                        position: fixed;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        padding: 10px 20px;
-                        font-size: 16px;
-                        z-index: 2147483647;
-                        border-radius: 1em;
-                        background: rgba(0, 0, 0, 0.8);
-                        color: white;
-                        border: none;
-                        z-index: 2147483647;
-                    `;
-            btn.style.zIndex = '2147483647';
-            btn.onclick = () => {
-              ttsQueue.init();
-              ttsQueue.audioElement.play();
-              video.play();
-              video.volume = 0.1;
-              document.body.removeChild(btn);
-              video.style.display = 'block';
-            };
-            document.body.appendChild(btn);
+            if (e.name && e.name.toLowerCase().includes('notallowederror') || e.message && e.message.toLowerCase().includes('gesture') || !e.name && !e.message) {
+              video.style.display = 'none';
+              const btn = document.createElement('button');
+              btn.textContent = '点击允许播放';
+              btn.style = `
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            padding: 10px 20px;
+                            font-size: 16px;
+                            z-index: 2147483647;
+                            border-radius: 1em;
+                            background: rgba(0, 0, 0, 0.8);
+                            color: white;
+                            border: none;
+                            z-index: 2147483647;
+                        `;
+              btn.style.zIndex = '2147483647';
+              btn.onclick = () => {
+                ttsQueue.init();
+                ttsQueue.audioElement.play();
+                video.play();
+                video.volume = 0.1;
+                document.body.removeChild(btn);
+                video.style.display = 'block';
+              };
+              document.body.appendChild(btn);
+            }
           });
         }
         return;

@@ -544,6 +544,7 @@ function switchMobileTab(tabName) {
 // ==================== 哔哩哔哩搜索 Modal ====================
 
 let _suggestTimer = null;
+let _suggestAbortController = null;
 let _searchPage = 1;
 let _searchKeyword = '';
 let _pendingAddUrl = null;
@@ -610,12 +611,20 @@ function fetchSuggest(_x) {
 }
 function _fetchSuggest() {
   _fetchSuggest = _asyncToGenerator(function* (term) {
+    if (_suggestAbortController) {
+      _suggestAbortController.abort();
+    }
+    _suggestAbortController = new AbortController();
     try {
-      const resp = yield fetch(`/api/bili/suggest?term=${encodeURIComponent(term)}`);
+      const resp = yield fetch(`/api/bili/suggest?term=${encodeURIComponent(term)}`, {
+        signal: _suggestAbortController.signal
+      });
       const items = yield resp.json();
       renderSuggest(items);
     } catch (e) {
-      hideSuggest();
+      if (e.name !== 'AbortError') {
+        hideSuggest();
+      }
     }
   });
   return _fetchSuggest.apply(this, arguments);
@@ -652,6 +661,10 @@ function hideSuggest() {
   if (_suggestTimer) {
     clearTimeout(_suggestTimer);
     _suggestTimer = null;
+  }
+  if (_suggestAbortController) {
+    _suggestAbortController.abort();
+    _suggestAbortController = null;
   }
 }
 function doSearch() {
