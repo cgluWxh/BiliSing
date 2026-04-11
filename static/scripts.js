@@ -3,7 +3,6 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
 let socket;
 let currentRoom = null;
 let currentUser = null;
-let currentUserType = null;
 let currentPlaying = null;
 let triggeredJoin = false; // 用于防止重复加入房间
 function joinRoom(defaultuser = false, masterMode = null) {
@@ -67,17 +66,11 @@ function setupSocketListeners() {
       document.getElementById('room-section').style.display = 'block';
       const roomTitleEle = document.createElement('span');
       roomTitleEle.id = 'room-title';
-      if (currentUserType === 'master') {
-        document.querySelector('.container').classList.add('player');
-        document.getElementById('master-view').style.display = 'block';
-        document.getElementById('masterInfo').prepend(roomTitleEle);
-      } else {
-        document.getElementById('slave-view').style.display = 'flex';
-        document.getElementById('basicInfo').prepend(roomTitleEle);
+      document.getElementById('slave-view').style.display = 'flex';
+      document.getElementById('basicInfo').prepend(roomTitleEle);
 
-        // 创建移动端底部 tab 切换器
-        createMobileTabSwitcher();
-      }
+      // 创建移动端底部 tab 切换器
+      createMobileTabSwitcher();
       roomTitleEle.innerHTML = `
                 <p>🏠 房间: ${currentRoom}<br /><span id="bilising-toggle-text">📱 单击展示点歌二维码</span></p>
                 <div id="bilising-qr-code" style="display: none; text-align: center;">
@@ -132,33 +125,15 @@ function setupSocketListeners() {
   });
 }
 function updateCurrentPlaying(song) {
-  // 如果是slave则只显示文字
   currentPlaying = song;
-  if (currentUserType === 'slave') {
-    const curSongContent = document.getElementById('current-song-content');
-    if (song && song.title) {
-      curSongContent.innerHTML = `
-                <div class="song-title">${song.title}</div>
-                <div class="song-producer">UP主: ${song.producer} 时长: ${formatDuration(song.duration)} 点播者: ${song.by}</div>
-            `;
-    } else {
-      curSongContent.innerHTML = '暂无正在播放的歌曲';
-    }
-    return;
-  }
-  const videoPlayer = document.getElementById('video-player');
-  if (song && song.url) {
-    // 从哔哩哔哩URL提取视频ID并创建嵌入链接
-    const bvMatch = song.url.match(/BV[\w]+/);
-    if (bvMatch) {
-      const bvId = bvMatch[0];
-      const embedUrl = `https://player.bilibili.com/player.html?bvid=${bvId}&autoplay=1&muted=0&danmaku=0`;
-      videoPlayer.innerHTML = `<iframe src="${embedUrl}" allowfullscreen sandbox="allow-scripts allow-same-origin" allow="fullscreen;autoplay"></iframe>`;
-    } else {
-      videoPlayer.innerHTML = '<div class="no-video">无法播放该视频</div>';
-    }
+  const curSongContent = document.getElementById('current-song-content');
+  if (song && song.title) {
+    curSongContent.innerHTML = `
+            <div class="song-title">${song.title}</div>
+            <div class="song-producer">UP主: ${song.producer} 时长: ${formatDuration(song.duration)} 点播者: ${song.by}</div>
+        `;
   } else {
-    videoPlayer.innerHTML = '<div class="no-video">暂无正在播放的歌曲</div>';
+    curSongContent.innerHTML = '暂无正在播放的歌曲';
   }
 }
 function formatDuration(seconds) {
@@ -174,12 +149,8 @@ function formatDuration(seconds) {
 }
 function updatePlaylist(playlist) {
   const container = document.getElementById('playlist-container');
-  const nextSongContent = document.getElementById('next-song-content');
   if (playlist.length === 0) {
     container.innerHTML = '<p>暂无歌曲</p>';
-    if (nextSongContent) {
-      nextSongContent.innerHTML = '暂无歌曲';
-    }
     // 处理总时长
     const estimatedDurationEle = document.getElementById('estimated-duration');
     // 获取当前播放歌曲时长
@@ -188,14 +159,6 @@ function updatePlaylist(playlist) {
       estimatedDurationEle.textContent = `(总时长 ${formatDuration(totalDuration)})`;
     }
     return;
-  }
-
-  // 更新下一首歌曲信息（Master视图）
-  if (nextSongContent && playlist.length > 0) {
-    const nextSong = playlist[0];
-    nextSongContent.innerHTML = `
-            <span class="song-title">${nextSong.title}</span>
-        `;
   }
 
   // 更新播放列表
@@ -209,14 +172,12 @@ function updatePlaylist(playlist) {
                     <div class="song-title">${index + 1}. ${song.title}</div>
                     <div class="song-producer">UP主: ${song.producer} 时长: ${formatDuration(song.duration)} 点播者: ${song.by}</div>
                 </div>
-                ${currentUserType === 'slave' ? `
                 <div class="song-actions">
-                <button class="move-up" onclick="moveSong(${index}, 0)" ${index === 0 ? 'disabled' : ''}>⏫</button>
+                    <button class="move-up" onclick="moveSong(${index}, 0)" ${index === 0 ? 'disabled' : ''}>⏫</button>
                     <button class="move-up" onclick="moveSong(${index}, ${index - 1})" ${index === 0 ? 'disabled' : ''}>⬆️</button>
                     <button class="move-down" onclick="moveSong(${index}, ${index + 1})" ${index === playlist.length - 1 ? 'disabled' : ''}>⬇️</button>
                     <button class="remove" onclick="removeSong(${index})">❎</button>
                 </div>
-                ` : ''}
             </div>
         `;
   });
@@ -241,11 +202,9 @@ function updatePlayedSongs(playedSongs) {
                     <div class="song-title">${song.title}</div>
                     <div class="song-producer">UP主: ${song.producer} 时长: ${formatDuration(song.duration)}</div>
                 </div>
-                ${currentUserType === 'slave' ? `
                 <div class="song-actions">
                     <button class="replay-btn" onclick="replaySong(${index})">🔄</button>
                 </div>
-                ` : ''}
             </div>
         `;
   });

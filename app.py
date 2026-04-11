@@ -695,4 +695,11 @@ def on_disconnect():
     pass
 
 if __name__ == '__main__':
-    socketio.run(app, debug=False, host='0.0.0.0', port=11817)
+    import argparse
+    parser = argparse.ArgumentParser(description='BiliSing Server')
+    parser.add_argument('--local', '-l', action='store_true', help='Listen on 127.0.0.1 instead of 0.0.0.0')
+    parser.add_argument('--debug', '-d', action='store_true', help='Enable debug mode')
+    args = parser.parse_args()
+
+    host = '127.0.0.1' if args.local else '0.0.0.0'
+    socketio.run(app, debug=args.debug, host=host, port=11817)

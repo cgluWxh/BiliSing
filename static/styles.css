@@ -85,35 +85,13 @@ body {
     display: none;
 }
 
-.master-view, .slave-view {
+.slave-view {
     display: none;
 }
 
 .slave-view > div {
     flex: 1;
     padding: 20px;
-}
-
-.video-container {
-    text-align: center;
-}
-
-.video-container iframe {
-    width: 100%;
-    height: 90vh;
-    border: none;
-    border-radius: 10px;
-}
-
-.no-video {
-    padding: 60px;
-    text-align: center;
-    background: linear-gradient(135deg, #3a404a 0%, #4a505a 100%);
-    border-radius: 15px;
-    color: #b0b0b0;
-    font-size: 18px;
-    border: 2px dashed rgba(255,255,255,0.1);
-    transition: all 0.3s ease;
 }
 
 .song-card {
@@ -607,15 +585,6 @@ body {
 
 .container {
     animation: fadeIn 0.6s ease-out;
-}
-
-.video-container iframe {
-    transition: all 0.3s ease;
-}
-
-.video-container iframe:hover {
-    transform: scale(1.02);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
 }
 
 /* 滚动条美化 */

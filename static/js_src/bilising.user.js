@@ -178,7 +178,6 @@ let lastRoomId, myURL;
     let socket;
     let currentRoom = null;
     let currentUser = '播放设备';
-    let currentUserType = 'master';
     let isConnected = false;
     let currentPlaying = null;
     let played_songs = [];
@@ -1035,7 +1034,7 @@ let lastRoomId, myURL;
             socket.emit('join_room', {
                 room_id: roomId,
                 user_name: currentUser,
-                user_type: currentUserType
+                user_type: 'master'
             });
 
             currentRoom = roomId;
