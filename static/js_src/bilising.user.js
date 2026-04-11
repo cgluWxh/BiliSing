@@ -481,13 +481,13 @@ let lastRoomId, myURL;
             <div id="bilising-controls" style="display: none;">
                 <div id="bilising-current">
                     <strong>正在播放：</strong>
-                    <div id="bilising-current-song">暂无歌曲</div>
+                    <div id="bilising-current-song">无</div>
                 </div>
                 <div id="bilising-next">
-                    <strong>下一首：</strong>
-                    <div id="bilising-next-song">暂无歌曲</div>
+                    <strong>下一个：</strong>
+                    <div id="bilising-next-song">无</div>
                 </div>
-                <button id="bilising-play-next">切歌</button>
+                <button id="bilising-play-next">播放下一个</button>
                 ${window.__BILISING_WEBPLAYER__ ? 
                   '<button id="bilising-play-mode">🌍 播放模式: 从源加载</button>' : 
                   '<button id="bilising-batch-add-fav">批量添加收藏夹</button>'}
@@ -915,7 +915,7 @@ let lastRoomId, myURL;
                         return;
                     }
                 }
-                headerContentController.setTemporaryText('没有可添加的歌曲', 5000);
+                headerContentController.setTemporaryText('没有可添加的视频', 5000);
             });
         }
         
@@ -1175,8 +1175,8 @@ let lastRoomId, myURL;
 
             navigateToVideoIfNeeded(song.url);
         } else {
-            currentSongElement.textContent = '暂无歌曲';
-            headerContentController.setOriginalText('已播放完所有歌曲，正在重复播放最后一首，请扫码点播');
+            currentSongElement.textContent = '无';
+            headerContentController.setOriginalText('已播放完所有视频，正在重复播放，请扫码点播');
             return;
         }
         // MARK: append
@@ -1194,11 +1194,11 @@ let lastRoomId, myURL;
         <div>${nextSong.title}</div>
         <div style="color: #ccc; font-size: 10px;">UP主: ${nextSong.producer}</div>
     `;
-            headerContentController.setOriginalText(`下一首: ${nextSong.title}; 正播放: ${currentPlaying ? currentPlaying.title : '暂无歌曲'}`);
+            headerContentController.setOriginalText(`接下来: ${nextSong.title}; 正播放: ${currentPlaying ? currentPlaying.title : '无'}`);
         } else {
             nextSong = null;
-            nextSongElement.textContent = '暂无歌曲';
-            headerContentController.setOriginalText('已是最后一首歌曲; 正播放: ' + (currentPlaying ? currentPlaying.title : '暂无歌曲'));
+            nextSongElement.textContent = '无';
+            headerContentController.setOriginalText('已是最后一个视频; 正播放: ' + (currentPlaying ? currentPlaying.title : '无'));
         }
     }
 
@@ -1214,7 +1214,7 @@ let lastRoomId, myURL;
             const video = document.getElementById('videoElement');
             if (video) {
                 const mode = localStorage.getItem('bilising-play-mode') || 'proxy';
-                video.src = `/v/${currentRoom}?t=${mode}`;
+                video.src = `/v/${currentRoom}?t=${mode}&_t=${Date.now()}`;
                 video.play().catch(e => {
                     video.style.display = 'none';
                     const btn = document.createElement('button');

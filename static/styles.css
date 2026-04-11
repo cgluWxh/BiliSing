@@ -101,7 +101,7 @@ body {
     border-radius: 12px;
     border-left: 4px solid #7bc6e6;
     transition: all 0.3s ease;
-    animation: slideIn 0.5s ease-out;
+    animation: fadeInSoft 0.3s ease-out;
 }
 
 .song-card:hover {
@@ -116,11 +116,13 @@ body {
 
 .playback-controls {
     display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 15px;
     padding-top: 15px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 500px; /* 限制最大宽度，防止在大屏幕上过度拉伸 */
 }
 
 .playback-controls button {
@@ -133,7 +135,6 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     flex: 1;
-    min-width: 80px;
     white-space: nowrap;
 }
 
@@ -152,7 +153,6 @@ body {
     padding: 20px;
     background: linear-gradient(135deg, rgba(55, 60, 68, 0.8) 0%, rgba(45, 50, 58, 0.8) 100%);
     border-radius: 12px;
-    animation: slideIn 0.5s ease-out;
 }
 
 .add-song h3 {
@@ -224,11 +224,10 @@ body {
     background: linear-gradient(135deg, rgba(55, 65, 75, 0.8) 0%, rgba(45, 55, 65, 0.8) 100%);
     flex-wrap: wrap;
     transition: all 0.3s ease;
-    animation: slideIn 0.5s ease-out;
 }
 
 .song-item:hover {
-    transform: translateX(8px);
+    transform: translateX(3px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     border-color: rgba(255,255,255,0.2);
 }
@@ -306,6 +305,18 @@ body {
 
 .replay-btn:hover {
     background: linear-gradient(135deg, #7bc6e6 0%, #5aabde 100%);
+}
+
+.confirm-state {
+    background: linear-gradient(135deg, #e68a6b 0%, #c46b4a 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(196, 107, 74, 0.4) !important;
+    transform: scale(1.02) !important;
+}
+
+.confirm-state:hover {
+    background: linear-gradient(135deg, #f09575 0%, #de7a5a 100%) !important;
+    transform: scale(1.05) translateY(-2px) !important;
 }
 
 .chat-section {
@@ -407,27 +418,6 @@ body {
     background: linear-gradient(135deg, #7bc6e6 0%, #5aabde 100%);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
-.next-song-btn {
-    padding: 16px 30px;
-    background: linear-gradient(135deg, #6bb6d6 0%, #4a9bc4 100%);
-    color: #ffffff;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 16px;
-    width: 100%;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.next-song-btn:hover {
-    background: linear-gradient(135deg, #7bc6e6 0%, #5aabde 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
 }
 
 .error {
@@ -550,6 +540,36 @@ body {
 }
 
 /* 动画效果 */
+@keyframes fadeInSoft {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 列表项变动时的高亮反馈 */
+.song-item.just-changed {
+    animation: highlightPulse 1s ease-out;
+}
+
+@keyframes highlightPulse {
+    0% { background: rgba(123, 198, 230, 0.7); }
+    100% { background: transparent; }
+}
+
+/* 添加歌曲成功的 toast */
+.add-success-toast {
+    color: #7bc6e6;
+    font-size: 13px;
+    margin-top: 8px;
+    animation: fadeInOut 1.8s ease-out forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
 @keyframes slideIn {
     from {
         opacity: 0;

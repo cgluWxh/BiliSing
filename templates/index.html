@@ -17,12 +17,12 @@
             <div class="header">
                 <h1>🎤 BiliSing</h1>
                 <p><a href="https://github.com/cgluWxh/BiliSing/blob/main/CHANGELOG.md" target="_blank">v2.0</a> by cgluWxh with ❤️. <a href="https://github.com/cgluWxh/BiliSing/blob/main/TERMS_AND_PRIVACY.md" target="_blank">用户条款 & 隐私政策</a></p>
-                <p>播放端下载 (点歌无须安装): <a href="/static/BiliSing_2.0.apk" target="_blank">Android App</a> | <a href="https://apps.apple.com/cn/app/bilising/id6749165474" target="_blank">App Store</a> | <a href="/static/bilising.user.js" target="_blank">电脑端 (请先在浏览器中安装 Tampermonkey / 篡改猴)</a></p>
+                <p>播放端下载 (点播无须安装): <a href="/static/BiliSing_2.0.apk" target="_blank">Android App</a> | <a href="https://apps.apple.com/cn/app/bilising/id6749165474" target="_blank">App Store</a> | <a href="/static/bilising.user.js" target="_blank">电脑端 (请先在浏览器中安装 Tampermonkey / 篡改猴)</a></p>
             </div>
             <div class="join-form">
                 <input type="text" id="room-id" placeholder="房间ID" required>
                 <select id="user-type">
-                    <option value="slave" selected>点歌设备</option>
+                    <option value="slave" selected>点播设备</option>
                     <option value="master">播放设备</option>
                 </select>
                 <input type="text" id="user-name" placeholder="用户名" required>
@@ -39,17 +39,18 @@
                 <div id="basicInfo">
                     <div id="current-song-info" class="song-card">
                         <h4>🎶 正在播放：</h4>
-                        <div id="current-song-content">暂无歌曲</div>
+                        <div id="current-song-content">无</div>
                         <div class="playback-controls">
-                            <button onclick="controlPlayback('play_from_start')">🔄 重播</button>
-                            <button onclick="controlPlayback('play_pause')">⏯ 播放/暂停</button>
-                            <button onclick="controlPlayback('volume_down')">🔉 音量-</button>
-                            <button onclick="controlPlayback('volume_up')">🔊 音量+</button>
+                                <button onclick="playFromStart(this)">🔄 重播</button>
+                                <button onclick="controlPlayback('play_pause')">⏯ 播放/暂停</button>
+                                <button onclick="controlPlayback('volume_down')">🔉 音量-</button>
+                                <button onclick="controlPlayback('volume_up')">🔊 音量+</button>
+                                <button onclick="playNextSong(this)">⏭️ 下一个视频</button>
                         </div>
                     </div>
 
                     <div class="add-song">
-                        <h3>🎵 添加歌曲</h3>
+                        <h3>🎵 点播</h3>
                         <div class="add-song-search-row">
                             <button onclick="openSearchModal()">🔍 搜索哔哩哔哩</button>
                         </div>
@@ -61,11 +62,10 @@
                     </div>
 
                     <!-- 播放列表 -->
-                    <button class="next-song-btn" onclick="playNextSong()">⏭️ 播放下一首</button>
                     <div class="playlist">
                         <h3 style="display: inline-block;">📋 播放列表 <span id="estimated-duration"></span></h3><button style="margin-left: .8em; display: inline-block;" onclick="requestPlaylistUpdate()">🔄</button>
                         <div id="playlist-container">
-                            <p>暂无歌曲</p>
+                            <p>无</p>
                         </div>
                     </div>
                 </div>
@@ -74,9 +74,9 @@
 
                     <!-- 已播放歌曲列表 -->
                     <div class="playlist">
-                        <h3>✅ 已播放歌曲</h3>
+                        <h3>✅ 已播放视频</h3>
                         <div id="played-songs-container">
-                            <p>暂无已播放歌曲</p>
+                            <p>无</p>
                         </div>
                     </div>
 

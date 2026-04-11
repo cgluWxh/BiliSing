@@ -5,6 +5,9 @@ let currentRoom = null;
 let currentUser = null;
 let currentPlaying = null;
 let triggeredJoin = false; // 用于防止重复加入房间
+let lastMoveTargetIndex = -1;
+let songNumber = 0; // 用于跟踪数量，辅助高亮处理
+
 function joinRoom(defaultuser = false, masterMode = null) {
   if (triggeredJoin) return;
   const roomId = document.getElementById('room-id').value.trim();
@@ -72,7 +75,7 @@ function setupSocketListeners() {
       // 创建移动端底部 tab 切换器
       createMobileTabSwitcher();
       roomTitleEle.innerHTML = `
-                <p>🏠 房间: ${currentRoom}<br /><span id="bilising-toggle-text">📱 单击展示点歌二维码</span></p>
+                <p>🏠 房间: ${currentRoom}<br /><span id="bilising-toggle-text">📱 单击展示点播二维码</span></p>
                 <div id="bilising-qr-code" style="display: none; text-align: center;">
                     <canvas id="bilising-qr-image"></canvas>
                     <p>📱 扫码加入房间</p>
@@ -83,7 +86,7 @@ function setupSocketListeners() {
         const toggleText = document.getElementById('bilising-toggle-text');
         if (qrCodeSection.style.display === 'none') {
           qrCodeSection.style.display = 'block';
-          toggleText.textContent = '🙈 单击隐藏点歌二维码';
+          toggleText.textContent = '🙈 单击隐藏点播二维码';
           const maxWidth = 480 / (window.devicePixelRatio || 1);
           const rect = qrCodeSection.getBoundingClientRect();
           const width = Math.min(maxWidth, rect.width * 0.8);
@@ -93,7 +96,7 @@ function setupSocketListeners() {
             errorCorrectionLevel: 'H'
           });
         } else {
-          toggleText.textContent = '📱 单击展示点歌二维码';
+          toggleText.textContent = '📱 单击展示点播二维码';
           qrCodeSection.style.display = 'none';
         }
       });
@@ -109,6 +112,21 @@ function setupSocketListeners() {
   socket.on('playlist_updated', function (data) {
     updatePlaylist(data.play_list);
     updatePlayedSongs(data.played_songs || []);
+    if (lastMoveTargetIndex !== -1) {
+      const targetIndex = lastMoveTargetIndex;
+      lastMoveTargetIndex = -1; // 消费后重置
+
+      const items = document.querySelectorAll('#playlist-container .song-item');
+      if (items[targetIndex]) {
+        const el = items[targetIndex];
+        el.classList.add('just-changed');
+        el.addEventListener('animationend', () => {
+          el.classList.remove('just-changed');
+        }, {
+          once: true
+        });
+      }
+    }
   });
   socket.on('error', function (data) {
     triggeredJoin = false; // 重置触发状态
@@ -133,7 +151,7 @@ function updateCurrentPlaying(song) {
             <div class="song-producer">UP主: ${song.producer} 时长: ${formatDuration(song.duration)} 点播者: ${song.by}</div>
         `;
   } else {
-    curSongContent.innerHTML = '暂无正在播放的歌曲';
+    curSongContent.innerHTML = '暂无正在播放的视频';
   }
 }
 function formatDuration(seconds) {
@@ -148,9 +166,11 @@ function formatDuration(seconds) {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 function updatePlaylist(playlist) {
+  if (!playlist) playlist = [];
+  songNumber = playlist.length;
   const container = document.getElementById('playlist-container');
   if (playlist.length === 0) {
-    container.innerHTML = '<p>暂无歌曲</p>';
+    container.innerHTML = '<p>无</p>';
     // 处理总时长
     const estimatedDurationEle = document.getElementById('estimated-duration');
     // 获取当前播放歌曲时长
@@ -191,7 +211,7 @@ function updatePlaylist(playlist) {
 function updatePlayedSongs(playedSongs) {
   const container = document.getElementById('played-songs-container');
   if (playedSongs.length === 0) {
-    container.innerHTML = '<p>暂无已播放歌曲</p>';
+    container.innerHTML = '<p>无</p>';
     return;
   }
   let html = '';
@@ -278,6 +298,8 @@ function addSong() {
   addSongBtn.innerHTML = "✅";
   addSongBtn.disabled = true; // 禁用按钮，防止重复提交
 
+  lastMoveTargetIndex = songNumber; // 新增歌曲默认高亮位置为列表末尾
+
   socket.emit('add_song', {
     room_id: currentRoom,
     url: matchedUrl[0],
@@ -290,6 +312,7 @@ function addSong() {
   }, 300);
 }
 function removeSong(index) {
+  lastMoveTargetIndex = -1; // 删除操作不触发高亮
   socket.emit('remove_song', {
     room_id: currentRoom,
     index: index,
@@ -298,6 +321,7 @@ function removeSong(index) {
 }
 function moveSong(fromIndex, toIndex) {
   if (toIndex < 0) return;
+  lastMoveTargetIndex = toIndex;
   socket.emit('reorder_songs', {
     room_id: currentRoom,
     from_index: fromIndex,
@@ -305,25 +329,50 @@ function moveSong(fromIndex, toIndex) {
   });
 }
 let nextSongTimer = null;
-function playNextSong() {
-  const ele = document.querySelector('.next-song-btn');
-  if (ele.innerHTML == "⏭️ 播放下一首") {
-    ele.innerHTML = "⏭️ 确认切歌";
+function playNextSong(ele) {
+  if (!ele) ele = document.querySelector('.next-song-btn'); // For backward compatibility if not passed
+  if (ele.innerHTML == "⏭️ 下一个视频") {
+    ele.innerHTML = "⏭️ 确认播放";
+    ele.classList.add('confirm-state');
     nextSongTimer = setTimeout(() => {
-      ele.innerHTML = "⏭️ 播放下一首";
+      ele.innerHTML = "⏭️ 下一个视频";
+      ele.classList.remove('confirm-state');
     }, 1500);
     return;
-  } else if (ele.innerHTML == "⏭️ 确认切歌") {
+  } else if (ele.innerHTML == "⏭️ 确认播放") {
     clearTimeout(nextSongTimer);
     socket.emit('next_song', {
       room_id: currentRoom,
       user_name: currentUser
     });
     ele.innerHTML = "✅ 已提交";
+    ele.classList.remove('confirm-state');
     ele.setAttribute("disabled", "true");
     setTimeout(() => {
-      ele.innerHTML = "⏭️ 播放下一首";
+      ele.innerHTML = "⏭️ 下一个视频";
       ele.removeAttribute("disabled");
+    }, 300);
+  }
+}
+function playFromStart(btn) {
+  if (btn.innerHTML === "🔄 重播") {
+    btn.innerHTML = "🔄 确认重播";
+    btn.classList.add('confirm-state');
+    if (btn.replayTimer) clearTimeout(btn.replayTimer);
+    btn.replayTimer = setTimeout(() => {
+      btn.innerHTML = "🔄 重播";
+      btn.classList.remove('confirm-state');
+    }, 1500);
+    return;
+  } else if (btn.innerHTML === "🔄 确认重播") {
+    if (btn.replayTimer) clearTimeout(btn.replayTimer);
+    controlPlayback('play_from_start');
+    btn.innerHTML = "✅ 已提交";
+    btn.classList.remove('confirm-state');
+    btn.setAttribute("disabled", "true");
+    setTimeout(() => {
+      btn.innerHTML = "🔄 重播";
+      btn.removeAttribute("disabled");
     }, 300);
   }
 }
@@ -436,7 +485,7 @@ function createMobileTabSwitcher() {
   tabSwitcher.innerHTML = `
         <div class="tab-buttons">
             <button class="tab-button active" onclick="switchMobileTab('basicInfo')">
-                <div class="tab-label">点歌</div>
+                <div class="tab-label">点播</div>
             </button>
             <button class="tab-button" onclick="switchMobileTab('playlist')">
                 <div class="tab-label">已播放</div>

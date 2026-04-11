@@ -265,7 +265,7 @@ def video_room(room_id):
 
     cur = room.current_playing
     if not cur:
-        return "当前没有播放歌曲", 404
+        return "当前没有播放视频", 404
     
     url = get_direct_play_url(cur.url)
     if url:
@@ -394,7 +394,7 @@ def on_add_song(data):
     rooms[room_id].play_list.append(song)
     
     # 添加系统消息
-    new_message = add_message_to_room(room_id, user_name, f'点播了歌曲：{song.title}', 'system')
+    new_message = add_message_to_room(room_id, user_name, f'点播：{song.title}', 'system')
     
     # 广播播放列表更新
     emit('playlist_updated', {
@@ -479,7 +479,7 @@ def on_remove_song(data):
         removed_song = room.play_list.pop(song_index)
         
         # 添加系统消息
-        new_message = add_message_to_room(room_id, user_name, f'删除了歌曲：{removed_song.title}', 'system')
+        new_message = add_message_to_room(room_id, user_name, f'删除：{removed_song.title}', 'system')
         
         # 广播播放列表更新
         emit('playlist_updated', {
@@ -566,7 +566,7 @@ def on_next_song(data):
         if user_name == '播放设备':
             new_message = None
         else:
-            new_message = add_message_to_room(room_id, user_name, f'播放下一首：{room.current_playing.title}', 'system')
+            new_message = add_message_to_room(room_id, user_name, f'播放下一个：{room.current_playing.title}', 'system')
         
         # 广播当前播放和播放列表更新
         emit('now_playing', {
@@ -628,7 +628,7 @@ def on_replay_song(data):
         room.play_list.append(song_to_replay)
         
         # 添加系统消息
-        new_message = add_message_to_room(room_id, user_name, f'重播了歌曲：{song_to_replay.title}', 'system')
+        new_message = add_message_to_room(room_id, user_name, f'重播：{song_to_replay.title}', 'system')
         
         # 广播播放列表更新
         emit('playlist_updated', {
