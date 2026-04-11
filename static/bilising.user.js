@@ -339,10 +339,13 @@ let lastRoomId, myURL;
 
           // 淡出视频音量
           yield this.audioElement.play();
-          fadeVolume(video, video ? video.volume : 1, 0.15, transitionDuration);
+          const originalVolume = video ? video.volume : 1;
+          const toVolume = originalVolume * 0.15; // 目标音量为原来的15%
+
+          fadeVolume(video, originalVolume, toVolume, transitionDuration);
           this.audioElement.onended = () => {
             // 淡回视频音量
-            fadeVolume(video, video ? video.volume : 0.15, 1.0, transitionDuration);
+            fadeVolume(video, toVolume, originalVolume, transitionDuration);
           };
         } catch (error) {
           console.warn('TTS朗读失败:', error, error.message);
@@ -1293,7 +1296,6 @@ let lastRoomId, myURL;
                 ttsQueue.init();
                 ttsQueue.audioElement.play();
                 video.play();
-                video.volume = 0.1;
                 document.body.removeChild(btn);
                 video.style.display = 'block';
               };
