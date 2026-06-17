@@ -924,7 +924,7 @@ let lastRoomId, myURL;
         
         const playModeBtn = document.getElementById('bilising-play-mode');
         if (playModeBtn) {
-            let mode = localStorage.getItem('bilising-play-mode') || 'redirect';
+            let mode = localStorage.getItem('bilising-play-mode') || 'proxy';
             const updatePlayModeText = () => {
                 playModeBtn.textContent = mode === 'proxy' ? '🌍 播放模式: 代理' : '🌍 播放模式: 从源加载';
             };
@@ -1217,7 +1217,7 @@ let lastRoomId, myURL;
         if (window.__BILISING_WEBPLAYER__) {
             const video = document.getElementById('videoElement');
             if (video) {
-                const mode = localStorage.getItem('bilising-play-mode') || 'redirect';
+                const mode = localStorage.getItem('bilising-play-mode') || 'proxy';
                 video.src = `/v/${currentRoom}?t=${mode}&_t=${Date.now()}`;
                 video.play().catch(e => {
                     if (

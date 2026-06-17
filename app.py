@@ -13,6 +13,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bilising_secret_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+PROXY_CHUNK_SIZE = 64 * 1024
+PROXY_UPSTREAM_TIMEOUT = (5, 30)
+PROXY_REFRESH_STATUSES = {401, 403, 404, 410, 500, 502, 503, 504}
+
 # 全局变量存储房间信息
 rooms = {}
 
@@ -102,6 +106,43 @@ def clear_expired_room(room_id):
         del rooms[room_id]
         return True
     return False
+
+def open_upstream_video_stream(source_url, range_header=None):
+    """Open Bilibili direct play URL, refreshing once if the upstream looks stale."""
+    last_resp = None
+
+    for attempt in range(2):
+        direct_url = get_direct_play_url(source_url)
+        if not direct_url:
+            break
+
+        req_headers = dict(BASE_HEADERS_TV)
+        if range_header:
+            req_headers['Range'] = range_header
+
+        resp = requests.get(
+            direct_url,
+            stream=True,
+            headers=req_headers,
+            timeout=PROXY_UPSTREAM_TIMEOUT,
+        )
+
+        if resp.status_code in PROXY_REFRESH_STATUSES and attempt == 0:
+            resp.close()
+            continue
+
+        last_resp = resp
+        break
+
+    return last_resp
+
+def iter_upstream_content(resp):
+    try:
+        for chunk in resp.iter_content(chunk_size=PROXY_CHUNK_SIZE):
+            if chunk:
+                yield chunk
+    finally:
+        resp.close()
 
 @app.route('/')
 def index():
@@ -267,37 +308,46 @@ def video_room(room_id):
     if not cur:
         return "当前没有播放视频", 404
     
-    url = get_direct_play_url(cur.url)
-    if url:
-        if query_type == 'redirect':
-            return redirect(url)
-        elif query_type == 'link':
-            return "<a href='{}'>点击这里播放</a>".format(url)
-        elif query_type == 'proxy':
-            try:
-                req_headers = dict(BASE_HEADERS_TV)
-                # 转发客户端的 Range 头，用于支持进度条拖动和断点续传
-                range_header = request.headers.get('Range', None)
-                if range_header:
-                    req_headers['Range'] = range_header
-
-                resp = requests.get(url, stream=True, headers=req_headers)
-                
-                response = Response(resp.iter_content(chunk_size=8192), 
-                                    status=resp.status_code, 
-                                    content_type=resp.headers.get('Content-Type', 'application/octet-stream'))
-                
-                # 透传关键响应头，使浏览器知道支持 Range 并且获取正确的长度和范围
-                for header in ['Content-Length', 'Content-Range', 'Accept-Ranges']:
-                    if header in resp.headers:
-                        response.headers[header] = resp.headers[header]
-                        
-                return response
-            except Exception as e:
-                print(f"Error proxying audio: {e}")
+    if query_type == 'proxy':
+        try:
+            # 转发客户端的 Range 头，用于支持进度条拖动和断点续传。
+            range_header = request.headers.get('Range')
+            resp = open_upstream_video_stream(cur.url, range_header)
+            if not resp:
                 return "无法获取播放地址", 500
-    else:
+
+            response = Response(
+                iter_upstream_content(resp),
+                status=resp.status_code,
+                content_type=resp.headers.get('Content-Type', 'application/octet-stream'),
+                direct_passthrough=True,
+            )
+
+            # 透传关键响应头，使浏览器知道支持 Range 并且获取正确的长度和范围。
+            for header in [
+                'Content-Length',
+                'Content-Range',
+                'Accept-Ranges',
+                'Last-Modified',
+                'ETag',
+            ]:
+                if header in resp.headers:
+                    response.headers[header] = resp.headers[header]
+
+            return response
+        except Exception as e:
+            print(f"Error proxying video: {e}")
+            return "无法获取播放地址", 500
+
+    url = get_direct_play_url(cur.url)
+    if not url:
         return "无法获取播放地址", 500
+
+    if query_type == 'redirect':
+        return redirect(url)
+    elif query_type == 'link':
+        return "<a href='{}'>点击这里播放</a>".format(url)
+    return "未知播放类型", 400
     
 
 
