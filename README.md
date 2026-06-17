@@ -1,6 +1,6 @@
 # BiliSing 点播系统 (v2.0)
 
-[Changelog](CHANGELOG.md) | [Terms of Service & Privacy Policy](TERMS_AND_PRIVACY.md)
+[Changelog](CHANGELOG.md) | [Terms of Service & Privacy Policy](TERMS_AND_PRIVACY.md) | [Demo Server](https://sing.831.moe/)
 
 BiliSing 是一款哔哩哔哩视频点播系统。通过简单的房间号连接，多名用户可以同时参与点播，并在一台核心“播放设备”（如电脑、平板或运行 BiliSing App 的安卓设备）上集中播放。
 
